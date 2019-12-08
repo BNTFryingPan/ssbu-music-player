@@ -1,0 +1,28 @@
+{
+    "name": "ssbu-music-player",
+    "version": "0.1.0",
+    "description": "A music player that looks like 'Sounds' in 'Vault' in SSBU",
+    "main": "main.js",
+    "scripts": {
+      "start": "electron ."
+    },
+    "repository": "https://github.com/leotomasmc/ssbu-music-player",
+    "keywords": [
+      "Electron",
+      "music",
+      "ssbu",
+      "songs"
+    ],
+    "author": "TheDerpyMemeSquad",
+    "license": "CC0-1.0",
+    "devDependencies": {
+      "electron": "^7.1.2"
+    },
+    "dependencies": {
+      "custom-electron-titlebar": "^3.1.0",
+      "discord.js": "^11.5.1",
+      "music-metadata": "^5.0.1",
+      "@svensken/ewc": "0.0.1"
+    }
+  }
+  
