@@ -34,10 +34,21 @@ document.onreadystatechange = () => {
         });
 
         document.getElementById('back-button').addEventListener("click", event => {
-            if (document.getElementById('top-settings').style.display != "none") {
-                setSettingsOpenState(false)
-            } else {
-                setTopMenuVisible(true)
+            var curLayer = document.getElementById('body').getAttribute('data-currentLayer');
+            if (curLayer == "top-menu") {
+                return;
+            } else if (curLayer == "settings") {
+                setSettingsOpenState(false);
+            } else if (curLayer == "album-list" || curLayer == "playlist-menu" || curLayer == "services-menu") {
+                setTopMenuVisible(true);
+            } else if (curLayer == "song-list") {
+                //document.getElementById('song-list').style.display = "none";
+                document.getElementById('album-list').style.display = "block";
+                document.getElementById('song-list').style.display = "none"
+                document.getElementById('body').setAttribute('data-currentLayer', "album-list")
+                //document.getElementById('list-container').style.overflowY = "hidden"
+            } else if (curLayer = "song-info-modal") {
+                toggleSongInfoModal(false);
             }
         });
 
@@ -63,7 +74,7 @@ document.onreadystatechange = () => {
 
         //update windows styles
         var userAccentColor = remote.systemPreferences.getAccentColor().substr(0,6);
-        document.documentElement.style.setProperty("--user-accent-color", "#" + userAccentColor)
+        document.documentElement.style.setProperty("--user-accent-color", "#" + userAccentColor);
     }
     
 };

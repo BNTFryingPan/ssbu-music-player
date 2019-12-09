@@ -23,6 +23,7 @@ p {
 
 #normal {
     display: block;
+    height: 100%;
 }
 
 *[hidden] > * {
@@ -35,7 +36,7 @@ p {
 #top-menu {
     height: 100%;
     width: 100%;
-    background-color: #101010;
+    background-color: #10101010;
     z-index: 5;
     position: fixed;
 }
@@ -43,7 +44,7 @@ p {
 #top-footer-bar {
     width: 100%;
     height: 15%;
-    background-color: #444;
+    background-color: #4444;
     position: absolute;
     bottom: 0;
     left: 0;
@@ -66,7 +67,7 @@ p {
 }
 
 #top-services-button {
-    background-color: green;
+    background-color: #0DBD2A;
     position: absolute;
     width: 40%;
     height: 15%;
@@ -75,26 +76,26 @@ p {
 }
 
 #album-list {
-    display: flex;
+    display: block;
 }
 
-#album-list, #song-list {
+#album-list, #song-list, #s-content {
     background-color: #000000cc;
     z-index: 0;
     padding: 10px;
     margin: 1%;
-    width: 68%;
-    min-height: 100%;
+    width: 90%;
+    min-height: 50%;
     height: auto;
     position: absolute;
-    right: 0px;
+    right: 5%;
 }
 
-#list-container {
+#list-container, #services {
     overflow-y: scroll;
-    padding: 0;
+    padding: 5%;
     height: 100%;
-    width: 100%;
+    width: calc(70% - 1px);
     display: block;
     position: fixed;
     bottom: 0;
@@ -141,6 +142,31 @@ p {
     padding: 0;
 }
 
+#song-controls > input[type="button"] {
+    background-color: blue;
+    color: #fff;
+    font-size: large;
+    padding: 10px;
+    margin: 2px;
+    border-radius: 10px;
+}
+
+#np-prev {
+    
+}
+
+#np-pause {
+
+}
+
+#np-next {
+
+}
+
+#np-shuffle {
+
+}
+
 #song-info {
     position: absolute;
     background-color: rgba(0,0,0,0.5);
@@ -156,14 +182,48 @@ p {
     opacity: 0;
 }
 
+#song-info-button {
+    position: absolute;
+    top: 0;
+    right: 0;
+    color: #fff;
+    background-color: #fff0;
+    border-style: solid;
+    border-width: 2px;
+    border-radius: 2px;
+}
+
+#advanced-song-info-modal {
+    position: fixed;
+    z-index: 10;
+    top: 30%;
+    left: 20%;
+    height: 40%;
+    width: 60%;
+    backdrop-filter: blur(10px);
+}
+
+#song-info-close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    transform: translate(-50% -50%);
+}
+
 #song-info-title {
-    margin-top: 2em;
+    position: absolute;
+    top: 2em;
+    left: 0;
+    width: 100%;
     text-align: center;
     font-size: x-large;
 }
 
 #song-info-album {
-    margin-top: 2em;
+    position: absolute;
+    top: 8em;
+    left: 0;
+    width: 100%;
     text-align: center;
 }
 
@@ -175,7 +235,7 @@ p {
     bottom: 0.75em;
 }
 
-#now-playing-spacer {
+.now-playing-spacer {
     height: 100%;
     width: 30%
 }
@@ -275,7 +335,7 @@ p {
     width: calc(70% - 1px);
     height: calc(10em - 1px);
     padding: 32px;
-    z-index: 1;
+    z-index: 5;
     background-color: #0C59DBDD;
 }
 
@@ -320,7 +380,7 @@ p {
     right: 0;
 }
 
-.select-hover-anim:hover:after {
+.select-hover-anim:hover:before {
     content: '';
     position: absolute;
     top: calc(-1 * var(--borderWidth));
@@ -344,12 +404,16 @@ p {
 }
 
 .album {
-    height: 4em;
-    width: 4em;
+    height: 10em;
+    width: 10em;
     padding: 2px;
+    margin: 5px;
     background-color: gray;
+    background-size: cover;
+    background-position: 0 0;
     border-style: solid;
     border-color: gray;
+    color: white;
 }
 
 /* Styling of window frame and titlebar */

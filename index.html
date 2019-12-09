@@ -6,7 +6,7 @@
 
         <link rel="stylesheet" href="style.css" />
     </head>
-    <body>
+    <body id="body" data-currentLevel="top-menu" data-prevLevel="top-menu">
         <div id='hidden-stuff' style='display: none'>
             <audio id="song">ok boomer</audio>
         </div>
@@ -46,6 +46,7 @@
         <div id='main'>
             <div id='top-settings' style='display: none'>
                 Enable Windows 10 Acrylic Background <input id="settings-acrylic" type="checkbox" checked>
+                <input id='settings-refresh-albums' value="Refesh Album List" type="button" onclick="loadAlbums()">
                 <div id='settings-info'>TheDerpyMemeSquad</div>
             </div>
             <div id='top-menu'>
@@ -65,42 +66,61 @@
             </div>
 
             <div id="normal" hidden>
-                <div id="now-playing-spacer">
-
-                </div>
+                <div class="now-playing-spacer"></div>
                 
                 <div id="album-info-header">
                     <div id="album-info-header-thing"></div>
-                    <img class="album-logo" src='./songs/Album Art/Cover.jpg' width="12%">
+                    <img id="album-info-header-img" class="album-logo" src='./other-album.png' width="12%">
                 </div>
+                
+                <div id="services" style="display:none">
+                    <div style="height: calc(8em)"></div>
+                    <div id="s-content">
+                        <div id="s-twitch-div">
+                            <span>Twitch Integration</span>
+                            <input type="button" value="Sign in with Twitch" onclick="twitch.beginTwitchOauthFlow()"><br>
+                            <span>Enable Songrequest:</span> <input type="checkbox">
+                        </div>
+                    </div>
+                </div>
+
+
                 <div id='list-container'>
-                    <div style="height: calc(12em)"></div>
-                    <div id="song-list">
+                    <div style="height: calc(8em)"></div>
+                    <div id="song-list" style="display: none">
                         <table id='song-list-t'>
                             <tbody id='song-list-tbody'>
                                 <tr><td></td><td>0</td><td>Example Song</td><td>0:00</td></tr>
                             </tbody>
                         </table>
                     </div>
-                    <div id='album-list'>
-                    
-                        <div class='album select-hover-anim'>test</div>
-                        
-    
-                    </div>
+                    <div id='album-list' style="display: none"></div>
                 </div>
             </div>
             <div id='now-playing' class='no-song' hidden>
                 <div id='song-alb-img'>
-                    <img id='song-info-art' class="album-logo" src='./songs/Album Art/Cover.jpg' width="50%">
+                    <img id='song-info-art' class="album-logo" src='./other-album.png' width="50%">
                     <span>Local Files</span>
                 </div>
                 <div id='song-info'>
+                    <input type="button" onclick="toggleSongInfoModal()" value="Song Info" id="song-info-button">
+                    <div id="advanced-song-info-modal" style="display: none">
+                        <input type="button" onclick="toggleSongInfoModal(false)" value="Back" id="song-info-close">
+                        <span id="song-info-title2">title - album - artist</span><br>
+                        <span id="song-info-genre">genre - comment</span><br>
+                        <span id="song-info-line1">year - mm:ss - disk/total - track/total</span><br>
+                        Format: <span id="song-info-line2">MP3 - MPEG - lossless</span>
+                    </div>
                     <div id="song-info-title"></div>
                     <div id="song-info-album"></div>
                     <div id="song-info-artist"></div>
                 </div>
-                <div id='song-controls'><input type="button" value="prev" onclick="previousSong()"> <input type="button" value="pause" onclick="pauseSong()"> <input type="button" value="next" onclick="nextSong()"> <input type="button" value="shuffle" onclick="shuffleSongs()"></div>
+                <div id='song-controls'>
+                    <input type="button" id="np-prev"    value="prev"    onclick="prevSong()">
+                    <input type="button" id="np-pause"   value="pause"   onclick="pauseSong()"> 
+                    <input type="button" id="np=next"    value="next"    onclick="nextSong()">
+                    <input type="button" id="np-shuffly" value="shuffle" onclick="shuffleSongs()">
+                </div>
             </div>
             
             
@@ -110,6 +130,9 @@
         <script>
             // You can also require other files to run in this process
             require('./renderer.js')
+            var twitch = require('./twitch.js')
+
+            console.log(twitch)
         </script>
         <script src="./ui.js"></script> 
     </body>

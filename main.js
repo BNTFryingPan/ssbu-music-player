@@ -1,13 +1,14 @@
 // Modules to control application life and create native browser window
 const {app, BrowserWindow, ipcMain, systemPreferences, dialog} = require('electron');
 const path = require('path');
-//const ewc = require('ewc-master')
+const platfolders = require('platform-folders');
+const ewc = require('@svensken/ewc')
 
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
-
+let popupWindow;
 
 function createWindow () {
     // Create the browser window.
@@ -15,15 +16,18 @@ function createWindow () {
     mainWindow = new BrowserWindow({
         width: 800,
         height: 600,
+        minWidth: 500, 
+        minHeight: 400,
+        //transparent: true,
         //backgroundColor: '#fff',
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: true
         },
-        backgroundColor: '#444',
+        backgroundColor: '#44444444',
         frame: false
     })
-    //ewc.setAcrylic(mainWindow, 0x14800020);
+    ewc.setAcrylic(mainWindow, 0x14800020);
 
     // and load the index.html of the app.
     mainWindow.loadFile('index.html')
@@ -62,7 +66,7 @@ app.on('activate', function () {
 // code. You can also put them in separate files and require them here.
 ipcMain.on('acrylic', (_) => {
     //console.log('enable')
-    //ewc.setAcrylic(mainWindow, 0x14800020);
+    ewc.setAcrylic(mainWindow, 0x14800020);
 });
 /*
 ipcMain.on('blurBehind', (_) => {
@@ -77,5 +81,5 @@ ipcMain.on('trGradient', (_) => {
 */
 ipcMain.on('disable', (_) => {
     //console.log("disable")
-    //ewc.disable(mainWindow, 0x14800020);
+    ewc.disable(mainWindow, 0x14800020);
 });
