@@ -50,7 +50,7 @@
                 <div id='settings-info'>TheDerpyMemeSquad</div>
             </div>
             <div id='top-menu'>
-                <div id="top-music-button" onclick="openMusicMenu()" class="top-button select-hover-anim">
+                <div id="top-music-button" onclick="loadAlbums();openMusicMenu();" class="top-button select-hover-anim">
                     Music
                 </div>
                 <div id="top-playlist-button" onclick="openPlaylistMenu()" class="top-button select-hover-anim">
@@ -70,6 +70,7 @@
                 
                 <div id="album-info-header">
                     <div id="album-info-header-thing"></div>
+                    <span id="album-info-header-thing-text">asdf</span>
                     <img id="album-info-header-img" class="album-logo" src='./other-album.png' width="12%">
                 </div>
                 
@@ -116,6 +117,7 @@
                     <div id="song-info-artist"></div>
                 </div>
                 <div id='song-controls'>
+                    <span id='shuffle-state'>Random</span>
                     <input type="button" id="np-prev"    value="prev"    onclick="prevSong()">
                     <input type="button" id="np-pause"   value="pause"   onclick="pauseSong()"> 
                     <input type="button" id="np=next"    value="next"    onclick="nextSong()">
@@ -134,6 +136,10 @@
 
             console.log(twitch)
         </script>
+        <script src="./playlists.js"></script>
+        <script src="./songs.js"></script>
+        <script src="./albums.js"></script>
+        <script src="./music-player.js"></script>
         <script src="./ui.js"></script> 
     </body>
 </html>

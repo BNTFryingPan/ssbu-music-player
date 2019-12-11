@@ -200,6 +200,9 @@ p {
     left: 20%;
     height: 40%;
     width: 60%;
+    border-width: 5px;
+    border-style: solid;
+    border-color:#fff;
     backdrop-filter: blur(10px);
 }
 
@@ -281,6 +284,16 @@ p {
     color: #1C47F6;
 }
 
+/*#song-list-tbody > tr:hover::after {
+    content: "asdf";
+    background-color: #fff;
+    height: 10px;
+    width: 10px;
+    position: fixed;
+    top: 0;
+    left: 0;
+}*/
+
 #song-list-t > tbody > tr:hover {
     background-image: linear-gradient(0deg, #1c47f6 5%, #00000000 6%)
     
@@ -341,18 +354,29 @@ p {
 
 #album-info-header-thing {
     position: absolute;
-    background-color: #0C59DBDD;
-    height: 2em;
+    /*background-color: #0C59DBDD;  
+    height: 2em;*/
     width: 40%;
     padding: 0;
     top: calc(10em - 1px);
-    left: 10px;
-    border-top-width: 100px;
+    left: 0px;
+    border-top: 40px solid #0C59DBDD;
+	border-left: 0px solid transparent;
+	border-right: 25px solid transparent;
+    /*border-top-width: 100px;
     border-right-width: 83px;
-    transform: skew(-20deg, 0deg);
+    transform: skew(-20deg, 0deg);*/
 }
 
-#album-info-header-thing::before {
+#album-info-header-thing-text {
+    position: relative;
+    height: 50px;
+    width: 50px;
+    top: 40%;
+    left: 0px;
+}
+
+/*#album-info-header-thing::before {
     content: "";
     position: fixed;
     height: 100%;
@@ -363,7 +387,7 @@ p {
     z-index: 100;
     transform: skew(20deg, 0deg);
     background-color: #0C59DBDD;
-}
+}*/
 
 .select-hover-anim {
     --borderWidth: 10px;
