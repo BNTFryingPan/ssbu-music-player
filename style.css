@@ -1,4 +1,14 @@
 /* Basic styling */
+
+/*
+draw 8x8 grid for frisbee landing
+draw 2 rectages, S and T
+P(S n T) = 0.3125
+P(T U S) = 0.625
+find P(S | T) and P(T | S)
+*/
+
+
 * {margin: 0; padding: 0; border: 0; vertical-align: baseline; user-select: none;}
 html {box-sizing: border-box;}
 *, *:before, *:after {box-sizing: inherit;}
@@ -76,19 +86,20 @@ p {
 }
 
 #album-list {
-    display: block;
+    display: flex;
+    flex-wrap: wrap;
 }
 
-#album-list, #song-list, #s-content {
+#album-list, #song-list, #s-content, #playlist-list {
     background-color: #000000cc;
     z-index: 0;
     padding: 10px;
     margin: 1%;
-    width: 90%;
-    min-height: 50%;
+    width: 93%;
+    min-height: 1%;
     height: auto;
     position: absolute;
-    right: 5%;
+    right: 3%;
 }
 
 #list-container, #services {
@@ -165,6 +176,37 @@ p {
 
 #np-shuffle {
 
+}
+
+.seek-slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 15px;
+    background: rgba(50, 157, 207, 0.473);
+    outline: none;
+    margin: 0px;
+    margin-top: 6px;
+    margin-bottom: 6px;
+    z-index: 0;
+}
+
+.seek-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: #40d0e0;
+    cursor: grab;
+    opacity: 0.8;
+}
+
+.seek-slider::-webkit-slider-thumb:active {
+    cursor: grabbing;
+}
+
+.seek-slider::-webkit-slider-thumb:hover {
+    opacity: 1;
 }
 
 #song-info {
@@ -301,7 +343,6 @@ p {
 
 #song-list-t > tbody > tr:hover :first-child {
     border-bottom: 0px solid #1C47F6;
-    
 }
 
 #song-list-t > tbody > tr:hover > :first-child {
@@ -369,11 +410,11 @@ p {
 }
 
 #album-info-header-thing-text {
-    position: relative;
+    position: absolute;
     height: 50px;
-    width: 50px;
-    top: 40%;
-    left: 0px;
+    width: 20%;
+    top: 105%;
+    left: 2%;
 }
 
 /*#album-info-header-thing::before {

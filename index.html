@@ -69,17 +69,17 @@
                 <div class="now-playing-spacer"></div>
                 
                 <div id="album-info-header">
+                    <img id="album-info-header-img" class="album-logo" src='./other-album.png' width="12%">
                     <div id="album-info-header-thing"></div>
                     <span id="album-info-header-thing-text">asdf</span>
-                    <img id="album-info-header-img" class="album-logo" src='./other-album.png' width="12%">
                 </div>
                 
                 <div id="services" style="display:none">
-                    <div style="height: calc(8em)"></div>
+                    <div style="height: calc(9em)"></div>
                     <div id="s-content">
                         <div id="s-twitch-div">
                             <span>Twitch Integration</span>
-                            <input type="button" value="Sign in with Twitch" onclick="twitch.beginTwitchOauthFlow()"><br>
+                            <input type="button" value="Sign in with Twitch" onclick="beginTwitchOauthFlow()"><br>
                             <span>Enable Songrequest:</span> <input type="checkbox">
                         </div>
                     </div>
@@ -87,7 +87,7 @@
 
 
                 <div id='list-container'>
-                    <div style="height: calc(8em)"></div>
+                    <div style="height: calc(9em)"></div>
                     <div id="song-list" style="display: none">
                         <table id='song-list-t'>
                             <tbody id='song-list-tbody'>
@@ -96,8 +96,11 @@
                         </table>
                     </div>
                     <div id='album-list' style="display: none"></div>
+                    <div id="playlist-list" style="display: none"></div>
                 </div>
             </div>
+
+
             <div id='now-playing' class='no-song' hidden>
                 <div id='song-alb-img'>
                     <img id='song-info-art' class="album-logo" src='./other-album.png' width="50%">
@@ -117,6 +120,7 @@
                     <div id="song-info-artist"></div>
                 </div>
                 <div id='song-controls'>
+                    <input type="range" step="0.000001" id="now-playing-seek-slider" oninput="updateSongProgressFromBar()" class="song-progress seek-slider">
                     <span id='shuffle-state'>Random</span>
                     <input type="button" id="np-prev"    value="prev"    onclick="prevSong()">
                     <input type="button" id="np-pause"   value="pause"   onclick="pauseSong()"> 
@@ -132,14 +136,12 @@
         <script>
             // You can also require other files to run in this process
             require('./renderer.js')
-            var twitch = require('./twitch.js')
-
-            console.log(twitch)
         </script>
         <script src="./playlists.js"></script>
         <script src="./songs.js"></script>
         <script src="./albums.js"></script>
         <script src="./music-player.js"></script>
         <script src="./ui.js"></script> 
+        <script src="./twitch.js"></script>
     </body>
 </html>

@@ -10,7 +10,7 @@ function getSongImage(song) {
     return "./unknown.png"
 }
 
-async function playSong(file) {
+async function playSongFromFile(file) {
     //console.log("getting song data")
     songData = await getSongData(file);
     console.log(songData)
@@ -19,8 +19,8 @@ async function playSong(file) {
     //console.log("playing song")
     audioElem = document.getElementById('song');
     audioElem.src = file;
-    audioElem.play();
 
+    nowPlaying['currentSource'] = "local-files"
     nowPlaying['song']['data'] = songData;
     nowPlaying['song']['index'] = songs['All Songs']['songs'].indexOf(songData)
     //console.log("song playing")
@@ -35,6 +35,12 @@ async function playSong(file) {
     document.getElementById('song-info-genre').innerHTML = songData[0]['genre'][0] + " - " + songData[0]['comment'][0];
     document.getElementById('song-info-line1').innerHTML = songData[0]['year'].toString() + " - " + songData[0]['duration'] + " - [" + songData[0]['disk']['no'] + "/" + songData[0]['disk']['of'] + "] - [" + songData[0]['track']['no'] + "/" + songData[0]['track']['of'] + "]";
     document.getElementById('song-info-line2').innerHTML = songData[1]["codec"] + " - " + songData[1]['container'] + " - lossless: " + songData[1]['lossless']
+    
+    var seek = document.getElementById('now-playing-seek-slider');
+
+    audioElem.play();
+    seek.max = songData[1].duration;
+    seek.value = 0;
 }
 
 async function createSongListEntryFromSongData(fileLocation) {
@@ -52,7 +58,7 @@ async function createSongListEntryFromSongData(fileLocation) {
         //<span>Example Song</span>
         //<span class="entry-duration">0:00</span>
     //</div>
-    entry = "<tr onclick=\"playSong('" + fileLocation.replace("'", "\\'") + "')\"><td></td><td>" + songData['track']['no'] + "</td><td>" + songData['title'] + "</td><td>" + songData['duration'] +  "</td></tr>"
+    entry = "<tr onclick=\"playSongFromFile('" + fileLocation.replace("'", "\\'") + "')\"><td></td><td>" + songData['track']['no'] + "</td><td>" + songData['title'] + "</td><td>" + songData['duration'] +  "</td></tr>"
     //console.log(songData['track'])
     return entry
 }
@@ -153,10 +159,13 @@ async function loadSongsFromFolder(directory) {
             }
         }
     }
+    return true;
     //hasLoadedSongs = true;
 }
 
 async function loadSongsFromMusicFolder() {
-    await loadSongsFromFolder(platFolders.getMusicFolder());
-    await loadAlbums()
+    var a = await loadSongsFromFolder(platFolders.getMusicFolder());
+    console.log(a)
+    var b = await loadAlbums()
+    console.log(b)
 }

@@ -1,6 +1,6 @@
 {
   "name": "ssbu-music-player",
-  "version": "0.2.1",
+  "version": "0.2.3",
   "description": "A music player that looks like 'Sounds' in 'Vault' in SSBU",
   "main": "main.js",
   "scripts": {
@@ -23,7 +23,9 @@
     "custom-electron-titlebar": "^3.1.0",
     "dank-twitch-irc": "3.0.5",
     "discord.js": "^11.5.1",
+    "iohook": "^0.6.2",
     "music-metadata": "^5.0.1",
-    "platform-folders": "^0.4.1"
+    "platform-folders": "^0.4.1",
+    "ytdl-core": "^1.0.3"
   }
 }

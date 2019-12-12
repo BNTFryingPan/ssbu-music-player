@@ -17,16 +17,18 @@ var songs = {
 
 var nowPlaying = {
     "previewedAlbum": "All Songs",
+    "openedAlbum": "",
     "song": {
         "data": null,
         "index": 0
     },
     "currentPlaylist": null,
+    "currentSource": null,
     "shuffleSource": {
         "type": "album",
         "name": "All Songs"
     },
-    "shuffleMode": "shuffle" // shuffle album/playlist, random all, order, loop
+    "shuffleMode": "order" // shuffle album/playlist, random all, order, loop
 };
 
 function randomSong(source=null) {
@@ -43,6 +45,11 @@ function randomSong(source=null) {
     var songCount = songsToPickFrom.length;
     var randomSongIndex = parseInt(Math.random() * songCount);
     return songsToPickFrom[randomSongIndex];
+}
+
+function updateSongProgressFromBar() {
+    var slider = document.getElementById("now-playing-seek-slider")
+    document.getElementById('song').currentTime = slider.value;
 }
 
 function pauseSong(state) {
@@ -69,8 +76,16 @@ function nextSong() {
     if (nowPlaying['shuffleMode'] == "loop") {
         document.getElementById('song').currentTime = 0;
         document.getElementById('song').play();
+    } else if (nowPlaying['shuffleMode'] == "shuffle") {
+        playSongFromFile(randomSong()[0]['fileLocation'])
+    } else if (nowPlaying['shuffleMode'] == "order") {
+        playSongFromFile(randomSong()[0]['fileLocation']);
+        nowPlaying['shuffleMode'] = "shuffle";
+        alert("Order mode wip, reverted to shuffle")
     } else {
-        playSong(randomSong()[0]['fileLocation'])
+        playSongFromFile(randomSong()[0]['fileLocation']);
+        nowPlaying['shuffleMode'] = "shuffle";
+        alert("unknown shuffle mode, reverted to shuffle")
     }
 }
 
@@ -95,12 +110,23 @@ function shuffleSongs() {
     document.getElementById('shuffle-state').innerHTML = nowPlaying['shuffleMode'];
 }
 
+var isChangingSong = false;
+
 function songTick() {
-    if (document.getElementById('song').ended) {
+    var song = document.getElementById('song')
+    if (song.ended && !isChangingSong) {
         nextSong();
+        isChangingSong = true;
+    } else if (song.currentTime >= song.duration/100) {
+        isChangingSong = false;
     }
+
+    //TODO: add seek slider, and update it here
+    document.getElementById('now-playing-seek-slider').value = song.currentTime;
 }
+
+// MediaNextTrack, MediaPreviousTrack, MediaStop and MediaPlayPause
 
 window.setInterval(function(){
     songTick();
-}, 20)
+}, 25)

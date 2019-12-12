@@ -14,26 +14,26 @@ const { ipcRenderer } = require('electron');
 document.onreadystatechange = () => {
     if (document.readyState == "complete") {
         handleWindowControls();
-        document.getElementById('min-button').addEventListener("click", event => {
+        document.getElementById('min-button').onclick = function(event) {
             let win = remote.getCurrentWindow();
             win.minimize();
-        });
+        };
         
-        document.getElementById('max-button').addEventListener("click", event => {
+        document.getElementById('max-button').onclick = function(event) {
             let win = remote.getCurrentWindow();
             win.maximize();
-        });
+        };
         
-        document.getElementById('restore-button').addEventListener("click", event => {
+        document.getElementById('restore-button').onclick = function(event) {
             let win = remote.getCurrentWindow();
             win.unmaximize();
-        });
+        };
         
-        document.getElementById('close-button').addEventListener("click", event => {
+        document.getElementById('close-button').onclick = function(event) {
             window.close();
-        });
+        };
 
-        document.getElementById('back-button').addEventListener("click", event => {
+        document.getElementById('back-button').onclick = function(event) {
             var curLayer = document.getElementById('body').getAttribute('data-currentLayer');
             if (curLayer == "top-menu") {
                 return;
@@ -43,25 +43,25 @@ document.onreadystatechange = () => {
                 setTopMenuVisible(true);
             } else if (curLayer == "song-list") {
                 //document.getElementById('song-list').style.display = "none";
-                document.getElementById('album-list').style.display = "block";
+                document.getElementById('album-list').style.display = "flex";
                 document.getElementById('song-list').style.display = "none"
                 document.getElementById('body').setAttribute('data-currentLayer', "album-list")
                 //document.getElementById('list-container').style.overflowY = "hidden"
             } else if (curLayer = "song-info-modal") {
                 toggleSongInfoModal(false);
             }
-        });
+        };
 
-        document.getElementById('settings-button').addEventListener("click", event => {
+        document.getElementById('settings-button').onclick = function(event) {
             if (document.getElementById('top-settings').style.display == "none") {
                 setSettingsOpenState(true)
             } else {
                 setSettingsOpenState(false)
             }
             
-        });
+        };
 
-        document.getElementById('settings-acrylic').addEventListener("click", event => {
+        document.getElementById('settings-acrylic').onclick = function(event) {
             state = document.getElementById('settings-acrylic').checked;
 
             if (state) {
@@ -69,7 +69,7 @@ document.onreadystatechange = () => {
             } else {
                 ipcRenderer.send("disable")
             }
-        })
+        }
         
 
         //update windows styles

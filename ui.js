@@ -41,6 +41,8 @@ function setTopMenuVisible(visibile) {
         document.getElementById('normal').hidden = true;
         document.getElementById('services').style.display = "none";
         document.getElementById('now-playing').hidden = true;
+        document.getElementById('album-list').style.display = "none";
+        document.getElementById('song-list').style.display = "none";
     } else {
         document.getElementById('top-menu').style.display = "none";
         document.getElementById('now-playing').hidden = false;
@@ -50,7 +52,7 @@ function setTopMenuVisible(visibile) {
 function openMusicMenu() {
     setTopMenuVisible(false);
     document.getElementById('body').setAttribute('data-currentLayer', "album-list")
-    document.getElementById('album-list').style.display = "block"
+    document.getElementById('album-list').style.display = "flex"
     document.getElementById('list-container').style.display = "block"
     document.getElementById('normal').hidden = false;
     updateTitle("Vault > Sounds > Music")
@@ -70,9 +72,10 @@ function setSettingsOpenState(state) {
 function openPlaylistMenu() {
     setTopMenuVisible(false);
     document.getElementById('body').setAttribute('data-currentLayer', "playlist-menu")
-    updateTitle("Vault > Sounds > Playlists")
+    document.getElementById('playlist-list').style.display = "block"
     document.getElementById('list-container').style.display = "block"
     document.getElementById('normal').hidden = false;
+    updateTitle("Vault > Sounds > Playlists")
 }
 
 function openServicesMenu() {
@@ -81,9 +84,7 @@ function openServicesMenu() {
     document.getElementById('services').style.display = "block";
     document.getElementById('normal').hidden = false;
     document.getElementById('list-container').style.display = "none"
-    document.getElementById('album-list').style.display = "none";
-    document.getElementById('song-list').style.display = "none";
-
+    updateTitle("Vault > Sounds > Services")
 }
 
 function toggleSongInfoModal(state) {

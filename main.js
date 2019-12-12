@@ -8,7 +8,7 @@ const ewc = require('@svensken/ewc')
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
-let popupWindow;
+//let popupWindow;
 
 function createWindow () {
     // Create the browser window.
@@ -22,7 +22,8 @@ function createWindow () {
         //backgroundColor: '#fff',
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
-            nodeIntegration: true
+            nodeIntegration: true,
+            //webSecurity: false
         },
         backgroundColor: '#44444444',
         frame: false
