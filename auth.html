@@ -11,10 +11,26 @@
     </head>
     
     <body>
-        <h1>Authenticating...</h1>
+        <h1>Almost Done!</h1>
+        <p>
+            Please enter the following information<br>
+            <br>
+            Channel to join: <input type="text" id="channel-name">
+            This is so you can use an account that is not your broadcaster account to send messages from.<br>
+            <br>
+            <input type="button" onclick="sendTwitchData()" value="Authenticate">
+        </p>
         
         <script>
-            window.opener.getTwitchData()
+            function sendTwitchData() {
+                var data = window.location.hash;
+                data += ",channel_to_join=" + document.getElementById("channel-name").value;
+                if (window.location.hash.startsWith("#")) {
+                    window.opener.postMessage("twitchOauth" + data);
+                } else {
+                    window.opener.postMessage("twitchOauth#" + data);
+                }
+            }
         </script>
     </body>
 </html>
