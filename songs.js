@@ -1,6 +1,6 @@
 function getSongImage(song) {
     var picture = song[0]['picture']
-    var hasPicture = false;
+    //var hasPicture = false;
     if (picture) {
         picture = picture[0]
         if (picture) {
@@ -13,16 +13,73 @@ function getSongImage(song) {
 async function playSongFromFile(file) {
     //console.log("getting song data")
     songData = await getSongData(file);
-    console.log(songData)
+    //console.log(songData)
     //console.log("got song data!")
 
     //console.log("playing song")
-    audioElem = document.getElementById('song');
+    //audioElem = document.getElementById('song');
     audioElem.src = file;
 
+    //var audioElem = document.getElementById(name);
+    //var src = audioCtx.createMediaElementSource(audioElem);
+    //var gainNode = audioCtx.createGain();
+    if (userSettings['normalizeVolume'] && songs[songData[0]['album']]['song']) {
+        document.getElementById("song-info-normalization").innerHTML = "Calculating...";
+        gainNode.gain.value = 1.0;
+        /*audioElem.onplay = function() {
+            src.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+        };
+        audioElem.onpause = function() {
+            // disconnect the nodes on pause, otherwise all nodes always run
+            src.disconnect(gainNode);
+            gainNode.disconnect(audioCtx.destination);
+        };*/
+
+        fetch(file)
+            .then(function(res) { return res.arrayBuffer(); })
+            .then(function(buf) {
+                return audioCtx.decodeAudioData(buf);
+            }).then(function(decodedData) {
+                var decodedBuffer = decodedData.getChannelData(0);
+                var sliceLen = Math.floor(decodedData.sampleRate * 0.05);
+                var averages = [];
+                var sum = 0.0;
+                for (var i = 0; i < decodedBuffer.length; i++) {
+                    sum += decodedBuffer[i] ** 2;
+                    if (i % sliceLen === 0) {
+                        sum = Math.sqrt(sum / sliceLen);
+                        averages.push(sum);
+                        sum = 0;
+                    }
+                }
+                // Ascending sort of the averages array
+                averages.sort(function(a, b) { return a - b; });
+                // Take the average at the 95th percentile
+                var a = averages[Math.floor(averages.length * 0.95)];
+                var gain = 1.0 / a;
+                // Perform some clamping
+                // gain = Math.max(gain, 0.02);
+                // gain = Math.min(gain, 100.0);
+                // ReplayGain uses pink noise for this one one but we just take
+                // some arbitrary value... we're no standard
+                // Important is only that we don't output on levels
+                // too different from other websites
+                gain = gain / 10.0;
+                //console.log("gain determined", name, a, gain);
+                gainNode.gain.value = gain;
+                //var gainTextElem = document.getElementById(name + "-d");
+                //gainTextElem.textContent = gain.toPrecision(4);
+                document.getElementById("song-info-normalization").innerHTML = gain;
+            }
+        );
+    }
+    
+
     nowPlaying['currentSource'] = "local-files"
+    nowPlaying['song']['type'] = "local-file"
     nowPlaying['song']['data'] = songData;
-    nowPlaying['song']['index'] = songs['All Songs']['songs'].indexOf(songData)
+    //nowPlaying['song']['index'] = songs['All Songs']['songs'].indexOf(songData)
     //console.log("song playing")
 
     document.getElementById('now-playing').classList.remove('no-song')
@@ -165,7 +222,8 @@ async function loadSongsFromFolder(directory) {
 
 async function loadSongsFromMusicFolder() {
     var a = await loadSongsFromFolder(platFolders.getMusicFolder());
-    console.log(a)
+    //console.log(a)
     var b = await loadAlbums()
-    console.log(b)
+    //console.log(b)
+    //await loadSongsFromFolder(platFolders.getMusicFolder()).then(loadAlbums())
 }

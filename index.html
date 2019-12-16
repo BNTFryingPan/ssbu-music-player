@@ -5,6 +5,30 @@
         <title>Music Player</title>
 
         <link rel="stylesheet" href="style.css" />
+        <script>
+            var audioCtx = new AudioContext();
+            var audioElem;
+            var src;
+            var gainNode;
+            // http://wiki.hydrogenaud.io/index.php?title=ReplayGain_specification
+            // TODO: do the loudness filtering (Butterworth, Yulewalk) IIR filters
+            function normalizedAudioElement(name) {
+                audioElem = document.getElementById(name);
+                src = audioCtx.createMediaElementSource(audioElem);
+                gainNode = audioCtx.createGain();
+                gainNode.gain.value = 1.0;
+                audioElem.onplay = function() {
+                    src.connect(gainNode);
+                    gainNode.connect(audioCtx.destination);
+                };
+                audioElem.onpause = function() {
+                    // disconnect the nodes on pause, otherwise all nodes always run
+                    src.disconnect(gainNode);
+                    gainNode.disconnect(audioCtx.destination);
+                };
+            }
+        </script>
+
     </head>
     <body id="body" data-currentLevel="top-menu" data-prevLevel="top-menu">
         <div id='hidden-stuff' style='display: none'>
@@ -80,7 +104,31 @@
                         <div id="s-twitch-div">
                             <span>Twitch Integration</span>
                             <input type="button" value="Sign in with Twitch" onclick="beginTwitchOauthFlow()"><br>
-                            <span>Enable Songrequest:</span> <input type="checkbox">
+                            <span>Enable Songrequest:</span> <input type="checkbox"><br>
+                            
+                            Who should be allowed to request songs?<br>
+                            <table onclick="updateTwitchSrPerms()">
+                                <tr title="Moderators only">
+                                    <td style="padding-right:2em">Moderators:</td>
+                                    <td><input name="s-t-sr-perm" type="radio" id="s-t-perm-mod"></td>
+                                </tr>
+                                <tr title="VIPs and Moderators">
+                                    <td>VIPs:</td>
+                                    <td><input name="s-t-sr-perm" type="radio" id="s-t-perm-vip"></td>
+                                </tr>
+                                <tr title="Subs, VIPs, Mods">
+                                    <td>Subscribers:</td>
+                                    <td><input name="s-t-sr-perm" type="radio" id="s-t-perm-sub"></td>
+                                </tr>
+                                <!--<tr title="Subs, Vips, Mods"> Commented out because this wont work quite yet
+                                    <td>Subscribers or VIP:</td>
+                                    <td><input name="s-t-sr-perm" type="radio" id="s-t-perm-suborvip"></td>
+                                </tr>-->
+                                <tr title="Anyone">
+                                    <td>Anyone:</td>
+                                    <td><input name="s-t-sr-perm" type="radio" id="s-t-perm-all"></td>
+                                </tr>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -113,13 +161,15 @@
                         <span id="song-info-title2">title - album - artist</span><br>
                         <span id="song-info-genre">genre - comment</span><br>
                         <span id="song-info-line1">year - mm:ss - disk/total - track/total</span><br>
-                        Format: <span id="song-info-line2">MP3 - MPEG - lossless</span>
+                        Format: <span id="song-info-line2">MP3 - MPEG - lossless</span><br>
+                        Normalization Gain: <span id='song-info-normalization'>{null}</span>
                     </div>
                     <div id="song-info-title"></div>
                     <div id="song-info-album"></div>
                     <div id="song-info-artist"></div>
                 </div>
                 <div id='song-controls'>
+                    <input type="range" step="0.000001" max=1 min=0 id="now-playing-volume-slider" oninput="document.getElementById('song').volume = document.getElementById('now-playing-volume-slider').value" class="seek-slider">
                     <input type="range" step="0.000001" id="now-playing-seek-slider" oninput="updateSongProgressFromBar()" class="song-progress seek-slider">
                     <span id='shuffle-state'>Random</span>
                     <input type="button" id="np-prev"    value="prev"    onclick="prevSong()">
@@ -135,7 +185,8 @@
 
         <script>
             // You can also require other files to run in this process
-            require('./renderer.js')
+            require('./renderer.js');
+            normalizedAudioElement("song");
         </script>
         <script src="./playlists.js"></script>
         <script src="./songs.js"></script>

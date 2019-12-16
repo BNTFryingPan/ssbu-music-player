@@ -20,16 +20,24 @@ var nowPlaying = {
     "openedAlbum": "",
     "song": {
         "data": null,
-        "index": 0
+        "index": 0,
+        "url": null,
+        "type": null,
+        "videoData": null
     },
+    "youtube-queue": [],
     "currentPlaylist": null,
     "currentSource": null,
     "shuffleSource": {
         "type": "album",
         "name": "All Songs"
     },
-    "shuffleMode": "order" // shuffle album/playlist, random all, order, loop
+    "shuffleMode": "order" // shuffle album/playlist, random all, order, loop, sr
 };
+
+var userSettings = {
+    "normalizeVolume": true
+}
 
 function randomSong(source=null) {
     if (source === null) {
@@ -44,7 +52,7 @@ function randomSong(source=null) {
     }
     var songCount = songsToPickFrom.length;
     var randomSongIndex = parseInt(Math.random() * songCount);
-    return songsToPickFrom[randomSongIndex];
+    return {"data": songsToPickFrom[randomSongIndex], "index": randomSongIndex};
 }
 
 function updateSongProgressFromBar() {
@@ -77,13 +85,21 @@ function nextSong() {
         document.getElementById('song').currentTime = 0;
         document.getElementById('song').play();
     } else if (nowPlaying['shuffleMode'] == "shuffle") {
-        playSongFromFile(randomSong()[0]['fileLocation'])
+        playSongFromFile(randomSong()['data'][0]['fileLocation'])
     } else if (nowPlaying['shuffleMode'] == "order") {
-        playSongFromFile(randomSong()[0]['fileLocation']);
-        nowPlaying['shuffleMode'] = "shuffle";
-        alert("Order mode wip, reverted to shuffle")
+        if (nowPlaying['shuffleSource']['type'] == "album") {
+            var nextSongIndex = nowPlaying['song']['index']
+            if (nextSongIndex >= songs[nowPlaying['shuffleSource']['name']]['songs'].length) {
+                nextSongIndex = 0;
+            }
+            
+            playSongFromFile(songs[nowPlaying['shuffleSource']['name']]['songs'][nextSongIndex][0]['fileLocation'])
+            nowPlaying['song']['index'] = nextSongIndex;
+        } else if (nowPlaying['shuffleSource']['type'] == "playlist") {
+            alert('whoops, you found playlists, bye')
+        }
     } else {
-        playSongFromFile(randomSong()[0]['fileLocation']);
+        playSongFromFile(randomSong()['data'][0]['fileLocation']);
         nowPlaying['shuffleMode'] = "shuffle";
         alert("unknown shuffle mode, reverted to shuffle")
     }
@@ -114,7 +130,7 @@ var isChangingSong = false;
 
 function songTick() {
     var song = document.getElementById('song')
-    if (song.ended && !isChangingSong) {
+    if (song.ended && !isChangingSong  ) {
         nextSong();
         isChangingSong = true;
     } else if (song.currentTime >= song.duration/100) {
