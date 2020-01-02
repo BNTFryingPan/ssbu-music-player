@@ -1,0 +1,14 @@
+=== Hey, this is a file.
+=== This file is used by the SSBU music player to save data about certian music files.
+=== You can delete this file if you want, but note that it will cause songs in this folder
+===     to re-normalize volume the next time you play the song.
+===     this file will also be recreated again if you play music from this folder.
+=== If you want to add text to this file for any reason, just add `===` to the start of the line.
+=== That will tell the music player to ignore the line, and move on to the next.
+=== it will also ignore blank lines, however you must start the line with `===`, otherwise it will
+===     read the entire line, even if you put `===` later in the line.
+
+*normalization
+=== These are normalization values for songs.
+=== If there isn't one here for a song you play, it is calculated while playing the song
+example-song.mp3: 0.6

@@ -4,7 +4,7 @@
         <meta charset="UTF-8">
         <title>Music Player</title>
 
-        <link rel="stylesheet" href="style.css" />
+        <link rel="stylesheet" href="style.css">
         <script>
             var audioCtx = new AudioContext();
             var audioElem;
@@ -30,7 +30,7 @@
         </script>
 
     </head>
-    <body id="body" data-currentLevel="top-menu" data-prevLevel="top-menu">
+    <body id="body" data-currentLevel="top-menu" data-prevLevel="top-menu" data-musicInfoOpen="false" data-settingsOpen="false">
         <div id='hidden-stuff' style='display: none'>
             <audio id="song">ok boomer</audio>
         </div>
@@ -58,7 +58,7 @@
                     <div class="button" id="settings-button" title="Settings">
                         <span></span>
                     </div>
-                    <div class="button" id="back-button" title="Back">
+                    <div class="button" id="back-button" title="Back" style='display:none'>
                         <span></span>
                     </div>
 
@@ -69,9 +69,29 @@
         
         <div id='main'>
             <div id='top-settings' style='display: none'>
-                Enable Windows 10 Acrylic Background <input id="settings-acrylic" type="checkbox" checked>
-                <input id='settings-refresh-albums' value="Refesh Album List" type="button" onclick="loadAlbums()">
-                <div id='settings-info'>TheDerpyMemeSquad</div>
+                <table>
+                    <tr>
+                        <td>Enable Windows 10 Acrylic Background</td>
+                        <td><input id="settings-acrylic" type="checkbox" checked></td>
+                    </tr>
+                    <tr>
+                        <td><input id='settings-refresh-albums' value="Refesh Album List" type="button" onclick="loadAlbums()"></td>
+                    </tr>
+                    <tr title="When enabling again, will take effect when the next song starts playing">
+                        <td>Enable Volume Normalization</td>
+                        <td><input id="settings-normalization" type="checkbox" checked onclick="userSettings['normalizeVolume'] = this.checked;gainNode.gain.value = 1"></td>
+                    </tr>
+                    <tr>
+                        <td>idk, more settings soon probably</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <iframe width="560" height="315" src="https://www.youtube.com/embed/eKC2ykkYWDY?controls=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                        </td>
+                    </tr>
+                </table>
+                
+                <div id='settings-info'>Version Alpha 0.2.4<br>TheDerpyMemeSquad</div>
             </div>
             <div id='top-menu'>
                 <div id="top-music-button" onclick="loadAlbums();openMusicMenu();" class="top-button select-hover-anim">
@@ -101,6 +121,51 @@
                 <div id="services" style="display:none">
                     <div style="height: calc(9em)"></div>
                     <div id="s-content">
+                        <div id="s-yt-test-area">
+                            <div id="player"></div>
+                            <script>
+                                // 2. This code loads the IFrame Player API code asynchronously.
+                                var tag = document.createElement('script');
+
+                                tag.src = "https://www.youtube.com/iframe_api";
+                                var firstScriptTag = document.getElementsByTagName('script')[0];
+                                firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+                                // 3. This function creates an <iframe> (and YouTube player)
+                                //    after the API code downloads.
+                                var player;
+                                function onYouTubeIframeAPIReady() {
+                                    player = new YT.Player('player', {
+                                    height: '390',
+                                    width: '640',
+                                    videoId: 'eKC2ykkYWDY',
+                                    events: {
+                                        'onReady': onPlayerReady,
+                                        'onStateChange': onPlayerStateChange
+                                    }
+                                    });
+                                }
+
+                                // 4. The API will call this function when the video player is ready.
+                                function onPlayerReady(event) {
+                                    event.target.playVideo();
+                                }
+
+                                // 5. The API calls this function when the player's state changes.
+                                //    The function indicates that when playing a video (state=1),
+                                //    the player should play for six seconds and then stop.
+                                var done = false;
+                                function onPlayerStateChange(event) {
+                                    if (event.data == YT.PlayerState.PLAYING && !done) {
+                                    setTimeout(stopVideo, 6000);
+                                    done = true;
+                                    }
+                                }
+                                function stopVideo() {
+                                    player.stopVideo();
+                                }
+                            </script>
+                        </div>
                         <div id="s-twitch-div">
                             <span>Twitch Integration</span>
                             <input type="button" value="Sign in with Twitch" onclick="beginTwitchOauthFlow()"><br>
@@ -177,6 +242,7 @@
                     <input type="button" id="np=next"    value="next"    onclick="nextSong()">
                     <input type="button" id="np-shuffly" value="shuffle" onclick="shuffleSongs()">
                 </div>
+                <canvas id='visualizer-canvas'></canvas>
             </div>
             
             
@@ -188,11 +254,12 @@
             require('./renderer.js');
             normalizedAudioElement("song");
         </script>
-        <script src="./playlists.js"></script>
-        <script src="./songs.js"></script>
-        <script src="./albums.js"></script>
-        <script src="./music-player.js"></script>
-        <script src="./ui.js"></script> 
-        <script src="./twitch.js"></script>
+        <script src="./js/playlists.js"></script>
+        <script src="./js/songs.js"></script>
+        <script src="./js/albums.js"></script>
+        <script src="./js/music-player.js"></script>
+        <script src="./js/folder-data.js"></script>
+        <script src="./js/ui.js"></script> 
+        <script src="./js/twitch.js"></script>
     </body>
 </html>

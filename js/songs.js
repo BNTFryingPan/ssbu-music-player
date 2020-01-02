@@ -1,6 +1,5 @@
 function getSongImage(song) {
     var picture = song[0]['picture']
-    //var hasPicture = false;
     if (picture) {
         picture = picture[0]
         if (picture) {
@@ -10,31 +9,23 @@ function getSongImage(song) {
     return "./unknown.png"
 }
 
+var calculatingGain = false;
+
 async function playSongFromFile(file) {
-    //console.log("getting song data")
     songData = await getSongData(file);
-    //console.log(songData)
-    //console.log("got song data!")
+    var song = document.getElementById("song")
+    song.src = file;
 
-    //console.log("playing song")
-    //audioElem = document.getElementById('song');
-    audioElem.src = file;
-
-    //var audioElem = document.getElementById(name);
-    //var src = audioCtx.createMediaElementSource(audioElem);
+    //var song = document.getElementById(name);
+    //var src = audioCtx.createMediaElementSource(song);
     //var gainNode = audioCtx.createGain();
-    if (userSettings['normalizeVolume'] && songs[songData[0]['album']]['song']) {
-        document.getElementById("song-info-normalization").innerHTML = "Calculating...";
-        gainNode.gain.value = 1.0;
-        /*audioElem.onplay = function() {
-            src.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-        };
-        audioElem.onpause = function() {
-            // disconnect the nodes on pause, otherwise all nodes always run
-            src.disconnect(gainNode);
-            gainNode.disconnect(audioCtx.destination);
-        };*/
+    if (userSettings['normalizeVolume']) {
+        calculatingGain = true;
+        //gainNode.gain.value = 0.2;
+        document.getElementById("song-info-normalization").innerHTML = gainNode.gain.value + " (Recalculating...)";
+        if (songs[songData[0]["album"]][songData['title']]['normalization'] != "null") {
+            gainNode.gain.value = songs[songData[0]["album"]][songData['title']]['normalization']
+        }
 
         fetch(file)
             .then(function(res) { return res.arrayBuffer(); })
@@ -70,9 +61,68 @@ async function playSongFromFile(file) {
                 gainNode.gain.value = gain;
                 //var gainTextElem = document.getElementById(name + "-d");
                 //gainTextElem.textContent = gain.toPrecision(4);
-                document.getElementById("song-info-normalization").innerHTML = gain;
+                document.getElementById("song-info-normalization").innerHTML = gainNode.gain.value;
+                songs[songData[0]["album"]][songData['title']]['normalization'] = gainNode.gain.value;
             }
         );
+        calculatingGain = false;
+    } else {
+        gainNode.gain.value = 0.5;
+    }
+
+    if (true) {
+        //var src = audioCtx.createMediaElementSource(song);
+        var analyser = audioCtx.createAnalyser();
+
+        var canvas = document.getElementById("visualizer-canvas");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        var ctx = canvas.getContext("2d");
+
+        src.connect(analyser);
+        analyser.connect(audioCtx.destination);
+
+        analyser.fftSize = 256;
+
+        var bufferLength = analyser.frequencyBinCount;
+        console.log(bufferLength);
+
+        var dataArray = new Uint8Array(bufferLength);
+
+        var WIDTH = canvas.width;
+        var HEIGHT = canvas.height;
+        console.log(HEIGHT)
+
+        var barWidth = (WIDTH / bufferLength) * 2.5;
+        var barHeight;
+        var x = 0;
+
+        function renderFrame() {
+        requestAnimationFrame(renderFrame);
+
+        x = 0;
+
+        analyser.getByteFrequencyData(dataArray);
+
+        //ctx.fillStyle = "#000";
+        //ctx.fillRect(0, 0, WIDTH, HEIGHT);
+        ctx.clearRect(0,0,WIDTH,HEIGHT)
+
+        for (var i = 0; i < bufferLength; i++) {
+            barHeight = dataArray[i];
+            
+            var r = barHeight + (25 * (i/bufferLength));
+            //var g = 250 * (i/bufferLength);
+            var g = 0;
+            var b = 50;
+
+            ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ", 0.4)";
+            ctx.fillRect(x, HEIGHT - barHeight, barWidth, barHeight);
+
+            x += barWidth + 1;
+        }
+        }
+        renderFrame();
     }
     
 
@@ -95,7 +145,7 @@ async function playSongFromFile(file) {
     
     var seek = document.getElementById('now-playing-seek-slider');
 
-    audioElem.play();
+    song.play();
     seek.max = songData[1].duration;
     seek.value = 0;
 }
@@ -125,6 +175,24 @@ async function getSongData(fileName) {
     var metaData = null;
     //console.log(fileName)
     await mm.parseFile(fileName, {duration: true}).then(metadata => {songData = metadata['common']; metaData = metadata['format']});
+    var folderPathNames = fileName.split("/");
+    //console.log(folderPathNames);
+    folderPathNames.reverse().pop();
+    //console.log(folderPathNames);
+    folderPathNames.reverse();
+    //console.log(folderPathNames);
+    var folderPath = ""
+    for (dir in folderPathNames) {
+        folderPath += folderPathNames[dir]
+        if (dir < folderPathNames.length-1) {
+            folderPath += "/"
+        }
+    }
+    //console.log(folderPathNames);
+    //return
+
+    songData['folder'] = folderPath;
+    songData['fileName'] = fileName.split("/")[fileName.split('/').length-1]
     if (!songData['title']) {
         var title = fileName.split('/')[fileName.split('/').length - 1].split('.mp3')[0];
         //console.log(title);
@@ -214,6 +282,8 @@ async function loadSongsFromFolder(directory) {
             if (songs[thisSong[0]['album']]['albumArt'] == './unknown.png' && thisSong[0]['picture']) {
                 songs[thisSong[0]['album']]['albumArt'] = getSongImage(thisSong);
             }
+        } else if (files[f] == ".ssbu-music") {
+            //parseFolderDataFile(files[f])
         }
     }
     return true;

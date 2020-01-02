@@ -1,9 +1,17 @@
-remix color: 759FFF
-new rmx color: FA4C93
-background light color: F2F2F2
-song selected color: 2444ED
+These colors are colors taken directly from SSBU.
+these colors are not automatically read by the player
+they are just here for refrence if needed.
 
-my music menu color: 55367C
-voices menu color: 0DBD2A
-music menu color: 2145F1
+remix color:            759FFF
+new rmx color:          FA4C93
+background light color: F2F2F2
+song selected color:    2444ED
+
+my music menu color:  55367C
+voices menu color:    0DBD2A
+music menu color:     2145F1
 playlists menu color: B87500
+
+playlists now playing base: ?
+music now playing base:     ?
+voices now playing base:    ?

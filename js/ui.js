@@ -3,6 +3,8 @@ const mm = require('music-metadata');
 const util = require('util');
 const platFolders = require('platform-folders');
 
+var song = document.getElementById('song')
+
 function fancyTimeFormat(time, forceHours)
 {   
     // Hours, minutes and seconds
@@ -43,9 +45,11 @@ function setTopMenuVisible(visibile) {
         document.getElementById('now-playing').hidden = true;
         document.getElementById('album-list').style.display = "none";
         document.getElementById('song-list').style.display = "none";
+        document.getElementById('back-button').style.display = "none";
     } else {
         document.getElementById('top-menu').style.display = "none";
         document.getElementById('now-playing').hidden = false;
+        document.getElementById('back-button').style.display = "flex";
     }
 }
 
@@ -60,11 +64,11 @@ function openMusicMenu() {
 
 function setSettingsOpenState(state) {
     if (state) {
-        document.getElementById('body').setAttribute('data-prevLayer', document.getElementById('body').getAttribute('data-currentLayer'))
-        document.getElementById('body').setAttribute('data-currentLayer', "settings")
+        //document.getElementById('body').setAttribute('data-prevLayer', document.getElementById('body').getAttribute('data-currentLayer'))
+        document.getElementById('body').setAttribute('data-settingsOpen', "true")
         document.getElementById('top-settings').style.display = "block";
     } else {
-        document.getElementById('body').setAttribute('data-currentLayer', document.getElementById('body').getAttribute('data-prevLayer'))
+        document.getElementById('body').setAttribute('data-settingsOpen', "false")
         document.getElementById('top-settings').style.display = "none";
     }
 }
@@ -91,19 +95,19 @@ function toggleSongInfoModal(state) {
     var modal = document.getElementById('advanced-song-info-modal');
     if (state == true) {
         modal.style.display = "block";
-        document.getElementById('body').setAttribute('data-prevLayer', document.getElementById('body').getAttribute('data-currentLayer'))
-        document.getElementById('body').setAttribute('data-currentLayer', "song-info-modal")
+        //document.getElementById('body').setAttribute('data-prevLayer', document.getElementById('body').getAttribute('data-currentLayer'))
+        document.getElementById('body').setAttribute('data-songInfoOpen', "true")
     } else if (state == false) {
         modal.style.display = "none";
-        document.getElementById('body').setAttribute('data-currentLayer', document.getElementById('body').getAttribute('data-prevLayer'))
+        document.getElementById('body').setAttribute('data-songInfoOpen', "false")
     } else {
         if (modal.style.display == "none") {
             modal.style.display = "block"
-            document.getElementById('body').setAttribute('data-prevLayer', document.getElementById('body').getAttribute('data-currentLayer'))
-            document.getElementById('body').setAttribute('data-currentLayer', "song-info-modal")
+            //document.getElementById('body').setAttribute('data-prevLayer', document.getElementById('body').getAttribute('data-currentLayer'))
+            document.getElementById('body').setAttribute('data-songInfoOpen', "true")
         } else {
             modal.style.display = "none"
-            document.getElementById('body').setAttribute('data-currentLayer', document.getElementById('body').getAttribute('data-prevLayer'))
+            document.getElementById('body').setAttribute('data-songInfoOpen', "false")
         }
     }
 }

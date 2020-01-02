@@ -130,15 +130,22 @@ var isChangingSong = false;
 
 function songTick() {
     var song = document.getElementById('song')
-    if (song.ended && !isChangingSong  ) {
+    if (nowPlaying['currentSource'] == 'yt') { return }
+    if (song.ended && !isChangingSong) {
         nextSong();
         isChangingSong = true;
+        sendNewSongPlayingMessage("Now Playing: " + nowPlaying['song']['data'][0]['title'] + " from " + nowPlaying['song']['data'][0]['album'] + " by " + nowPlaying['song']['data'][0]['artist'] + " from a file.");
     } else if (song.currentTime >= song.duration/100) {
         isChangingSong = false;
     }
 
     //TODO: add seek slider, and update it here
     document.getElementById('now-playing-seek-slider').value = song.currentTime;
+    /*if (!calculatingGain) {
+        document.getElementById("song-info-normalization").innerHTML = gainNode.gain.value
+    } else {
+        document.getElementById("song-info-normalization").innerHTML = gainNode.gain.value + " (Recalculating...)"
+    }*/
 }
 
 // MediaNextTrack, MediaPreviousTrack, MediaStop and MediaPlayPause

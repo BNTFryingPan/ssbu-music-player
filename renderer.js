@@ -35,20 +35,21 @@ document.onreadystatechange = () => {
 
         document.getElementById('back-button').onclick = function(event) {
             var curLayer = document.getElementById('body').getAttribute('data-currentLayer');
-            if (curLayer == "top-menu") {
-                return;
-            } else if (curLayer == "settings") {
+            var settingsOpen = document.getElementById('body').getAttribute('data-settingsOpen') == "true";
+            var songInfoOpen = document.getElementById('body').getAttribute('data-songInfoOpen') == "true";
+            
+            if (settingsOpen) {
                 setSettingsOpenState(false);
-            } else if (curLayer == "album-list" || curLayer == "playlist-menu" || curLayer == "services-menu") {
+            } else if (songInfoOpen) {
+                toggleSongInfoModal(false);
+            } else if (['album-list', 'playlist-menu', 'services-menu'].includes(curLayer)) {
                 setTopMenuVisible(true);
-            } else if (curLayer == "song-list") {
-                //document.getElementById('song-list').style.display = "none";
+            } else if (curLayer == 'song-list') {
                 document.getElementById('album-list').style.display = "flex";
                 document.getElementById('song-list').style.display = "none"
                 document.getElementById('body').setAttribute('data-currentLayer', "album-list")
-                //document.getElementById('list-container').style.overflowY = "hidden"
-            } else if (curLayer = "song-info-modal") {
-                toggleSongInfoModal(false);
+            } else {
+                return;
             }
         };
 

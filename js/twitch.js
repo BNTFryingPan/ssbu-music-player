@@ -40,7 +40,8 @@ var twitchOauthData = {
 var twitchUserData = {};
 
 var permissions = {
-    "sr": 1
+    "sr": 1,
+    "fullControl": 8
 };
 
 var twitchApplicationData = {
@@ -78,6 +79,12 @@ function updateTwitchSrPerms() {
         permissions['sr'] += 4
     } if (document.getElementById("s-t-perm-mod").checked) {
         permissions['sr'] += 8
+    }
+}
+
+function sendNewSongPlayingMessage(message) {
+    if (bot.connected) {
+        bot.say(tch, message)
     }
 }
 
@@ -121,6 +128,11 @@ function startTwitchIntegration() {
                 }
 
                 bot.say(tch, nowPlayingMessage)
+            } else if (userPermissionLevel >= permissions['fullControl']) {
+                if (msg.messageText.startsWith("!skip") || msg.messageText.startsWith("!nextsong")) {
+                    nextSong();
+                    sendNewSongPlayingMessage("Skipped song. Now Playing " + nowPlaying['song']['data'][0]['title'] + " from " + nowPlaying['song']['data'][0]['album'] + " by " + nowPlaying['song']['data'][0]['artist'] + " from a file.");
+                }
             }
         })
         bot.on("WHISPER", msg => {console.log(`[DM ${msg.displayName}]: ${msg.messageText}`)});
@@ -157,9 +169,11 @@ window.onmessage = function(event){
     }
 }
 
-function getJson(url, callback) {
+function getUserDataFromToken(url, callback, token) {
     var xhr = new XMLHttpRequest();
+    xhr.setRequestHeader("Bearer", token)
     xhr.open('GET', url, true);
+    //xhr.setRequestHeader()
     xhr.responseType = 'json';
     xhr.onload = function() {
       var status = xhr.status;

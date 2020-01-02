@@ -90,7 +90,7 @@ p {
     flex-wrap: wrap;
 }
 
-#album-list, #song-list, #s-content, #playlist-list {
+#album-list, #song-list, #playlist-list {
     background-color: #000000cc;
     z-index: 0;
     padding: 10px;
@@ -100,6 +100,15 @@ p {
     height: auto;
     position: absolute;
     right: 3%;
+}
+
+#s-content > div {
+    background-color: #000000cc;
+    padding: 10px;
+    margin: 1%;
+    margin-bottom: 2%;
+    width: 93%;
+    height: auto;
 }
 
 #list-container, #services {
@@ -153,6 +162,10 @@ p {
     padding: 0;
 }
 
+#now-playing > * {
+    z-index: 2;
+}
+
 #song-controls > input[type="button"] {
     background-color: blue;
     color: #fff;
@@ -162,8 +175,8 @@ p {
     border-radius: 10px;
 }
 
-#np-prev {
-    
+#song-controls > #np-prev {
+    border-radius: 15px 15px 0px 0px;
 }
 
 #np-pause {
@@ -283,6 +296,15 @@ p {
     position: absolute;
     width: 100%;
     bottom: 0.75em;
+}
+
+#visualizer-canvas {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    z-index: 0;
 }
 
 .now-playing-spacer {
@@ -446,6 +468,7 @@ p {
 
 #settings-info {
     position: absolute;
+    text-align: right;
     bottom: 0;
     right: 0;
 }
