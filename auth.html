@@ -25,6 +25,7 @@
             function sendTwitchData() {
                 var data = window.location.hash;
                 data += "&channel_to_join=" + document.getElementById("channel-name").value;
+                console.log("Sending data: " + data)
                 if (window.location.hash.startsWith("#")) {
                     window.opener.postMessage("twitchOauth" + data);
                 } else {
