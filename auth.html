@@ -26,9 +26,9 @@
                 var data = window.location.hash;
                 data += "&channel_to_join=" + document.getElementById("channel-name").value;
                 if (window.location.hash.startsWith("#")) {
-                    window.opener.setTwitchOauthData("twitchOauth" + data);
+                    window.opener.postMessage("twitchOauth" + data);
                 } else {
-                    window.opener.setTwitchOauthData("twitchOauth#" + data);
+                    window.opener.postMessage("twitchOauth#" + data);
                 }
             }
         </script>
