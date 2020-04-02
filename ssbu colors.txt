@@ -2,6 +2,7 @@ These colors are colors taken directly from SSBU.
 these colors are not automatically read by the player
 they are just here for refrence if needed.
 
+
 remix color:            759FFF
 new rmx color:          FA4C93
 background light color: F2F2F2
