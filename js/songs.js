@@ -12,62 +12,66 @@ function getSongImage(song) {
 var calculatingGain = false;
 
 async function playSongFromFile(file) {
+    console.log(file)
     songData = await getSongData(file);
     var song = document.getElementById("song")
     song.src = file;
+    console.log(songs[songData[0]["album"]])
 
     //var song = document.getElementById(name);
     //var src = audioCtx.createMediaElementSource(song);
     //var gainNode = audioCtx.createGain();
     if (userSettings['normalizeVolume']) {
         calculatingGain = true;
-        //gainNode.gain.value = 0.2;
         document.getElementById("song-info-normalization").innerHTML = gainNode.gain.value + " (Recalculating...)";
-        if (songs[songData[0]["album"]][songData['title']]['normalization'] != "null") {
-            gainNode.gain.value = songs[songData[0]["album"]][songData['title']]['normalization']
-        }
+        if (songs[songData[0]["album"]]['songs'][file][1]['normalization']) {
+            gainNode.gain.value = (songs[songData[0]["album"]]['songs'][file][1]['normalization'] * nowPlaying['userVolumeSliderValue']);
+            document.getElementById("song-info-normalization").innerHTML = gainNode.gain.value;
+            //console.log("reused gain value: " + songs[songData[0]["album"]]['songs'][file][1]['normalization'])
 
-        fetch(file)
-            .then(function(res) { return res.arrayBuffer(); })
-            .then(function(buf) {
-                return audioCtx.decodeAudioData(buf);
-            }).then(function(decodedData) {
-                var decodedBuffer = decodedData.getChannelData(0);
-                var sliceLen = Math.floor(decodedData.sampleRate * 0.05);
-                var averages = [];
-                var sum = 0.0;
-                for (var i = 0; i < decodedBuffer.length; i++) {
-                    sum += decodedBuffer[i] ** 2;
-                    if (i % sliceLen === 0) {
-                        sum = Math.sqrt(sum / sliceLen);
-                        averages.push(sum);
-                        sum = 0;
+        } else {
+            fetch(file)
+                .then(function(res) { return res.arrayBuffer(); })
+                .then(function(buf) {
+                    return audioCtx.decodeAudioData(buf);
+                }).then(function(decodedData) {
+                    var decodedBuffer = decodedData.getChannelData(0);
+                    var sliceLen = Math.floor(decodedData.sampleRate * 0.05);
+                    var averages = [];
+                    var sum = 0.0;
+                    for (var i = 0; i < decodedBuffer.length; i++) {
+                        sum += decodedBuffer[i] ** 2;
+                        if (i % sliceLen === 0) {
+                            sum = Math.sqrt(sum / sliceLen);
+                            averages.push(sum);
+                            sum = 0;
+                        }
                     }
+                    // Ascending sort of the averages array
+                    averages.sort(function(a, b) { return a - b; });
+                    // Take the average at the 95th percentile
+                    var a = averages[Math.floor(averages.length * 0.95)];
+                    var gain = 1.0 / a;
+                    // ReplayGain uses pink noise for this one one but we just take
+                    // some arbitrary value... we're no standard
+                    // Important is only that we don't output on levels
+                    // too different from other websites
+                    gain = gain / 10.0;
+                    nowPlaying['rawNormalizationGain'] = gain
+                    //gainNode.gain.setValueAtTime(gain * nowPlaying['userVolumeSliderValue'], audioCtx.currentTime);
+                    
+                    gainNode.gain.value = (gain * nowPlaying['userVolumeSliderValue']);
+                    document.getElementById("song-info-normalization").innerHTML = gainNode.gain.value + " = " + gain + "x" + nowPlaying['userVolumeSliderValue'];
+                    songs[songData[0]["album"]]['songs'][file][1]['normalization'] = gain;
                 }
-                // Ascending sort of the averages array
-                averages.sort(function(a, b) { return a - b; });
-                // Take the average at the 95th percentile
-                var a = averages[Math.floor(averages.length * 0.95)];
-                var gain = 1.0 / a;
-                // Perform some clamping
-                // gain = Math.max(gain, 0.02);
-                // gain = Math.min(gain, 100.0);
-                // ReplayGain uses pink noise for this one one but we just take
-                // some arbitrary value... we're no standard
-                // Important is only that we don't output on levels
-                // too different from other websites
-                gain = gain / 10.0;
-                //console.log("gain determined", name, a, gain);
-                gainNode.gain.value = gain;
-                //var gainTextElem = document.getElementById(name + "-d");
-                //gainTextElem.textContent = gain.toPrecision(4);
-                document.getElementById("song-info-normalization").innerHTML = gainNode.gain.value;
-                songs[songData[0]["album"]][songData['title']]['normalization'] = gainNode.gain.value;
-            }
-        );
+            );
+            
+        }
         calculatingGain = false;
+        
     } else {
-        gainNode.gain.value = 0.5;
+        //gainNode.gain.value = 0.5;
+        disconnectAudioNormalizer()
     }
 
     if (true) {
@@ -85,13 +89,13 @@ async function playSongFromFile(file) {
         analyser.fftSize = 256;
 
         var bufferLength = analyser.frequencyBinCount;
-        console.log(bufferLength);
+        //console.log(bufferLength);
 
         var dataArray = new Uint8Array(bufferLength);
 
         var WIDTH = canvas.width;
         var HEIGHT = canvas.height;
-        console.log(HEIGHT)
+        //console.log(HEIGHT)
 
         var barWidth = (WIDTH / bufferLength) * 2.5;
         var barHeight;
@@ -175,7 +179,7 @@ async function getSongData(fileName) {
     var metaData = null;
     //console.log(fileName)
     await mm.parseFile(fileName, {duration: true}).then(metadata => {songData = metadata['common']; metaData = metadata['format']});
-    var folderPathNames = fileName.split("/");
+    var folderPathNames = fileName.replace(/\\/g, "/").split("/");
     //console.log(folderPathNames);
     folderPathNames.reverse().pop();
     //console.log(folderPathNames);
@@ -192,6 +196,7 @@ async function getSongData(fileName) {
     //return
 
     songData['folder'] = folderPath;
+    //console.log(folderPath)
     songData['fileName'] = fileName.split("/")[fileName.split('/').length-1]
     if (!songData['title']) {
         var title = fileName.split('/')[fileName.split('/').length - 1].split('.mp3')[0];
@@ -236,17 +241,15 @@ async function getSongData(fileName) {
     }
 
     songData['duration'] = fancyTimeFormat(metaData["duration"]);
-    songData['fileLocation'] = fileName.replace("\\", "/"); //idk why, but i have to do this twice
-    songData['fileLocation'] = songData['fileLocation'].replace("\\", "/")
-    songData['fileLocation'] = songData['fileLocation'].replace("\\", "/")
-    songData['fileLocation'] = songData['fileLocation'].replace("\\", "/")
-    songData['fileLocation'] = songData['fileLocation'].replace("\\", "/")
+    songData['fileLocation'] = fileName.replace(/\\/g, "/");
+    songData['fileLocation'] = songData['fileLocation'].replace(/\\/g, "/")
     //songData['fileLocation'] = songData['fileLocation'].replace("'", "'")
     //console.log(songData)
     return [songData, metaData];
 }
 
 async function loadSongsFromFolder(directory) {
+    directory = directory.replace(/\\/g, "/");
     var files = fs.readdirSync(directory)
     //console.log(files)
     for (var f in files) {
@@ -263,15 +266,18 @@ async function loadSongsFromFolder(directory) {
                 songs[thisSong[0]['album']] = {
                     "albumArt": "./unknown.png",
                     "artists": [],
-                    "songs": [],
+                    "songs": {},
+                    "songFilePaths": [],
                     "duration": 0
                 }
             }
 
-            songs[thisSong[0]['album']]['songs'].push(thisSong)
+            songs[thisSong[0]['album']]['songs'][directory + "/" + files[f]] = thisSong
+            songs[thisSong[0]['album']]['songFilePaths'].push(directory + "/" + files[f])
             songs[thisSong[0]['album']]["duration"] += thisSong[1]['duration']
-            songs["All Songs"]['songs'].push(thisSong);
+            songs["All Songs"]['songs'][directory + "/" + files[f]] = thisSong
             songs["All Songs"]['duration'] += thisSong[1]['duration']
+            songs["All Songs"]['songFilePaths'].push(directory + "/" + files[f])
 
 
             // if the songs 'albumartist' isnt in the albums artist list, add them

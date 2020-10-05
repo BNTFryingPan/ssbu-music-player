@@ -3,7 +3,7 @@ async function openAlbum(albumName) {
     if (nowPlaying['openedAlbum'] != albumName) {
         document.getElementById('song-list-tbody').innerHTML = "";
         document.getElementById('album-info-header-img').src = songs[albumName]['albumArt']
-        document.getElementById('album-info-header-thing-text').innerHTML = songs[albumName]['songs'].length.toString() + " " + fancyTimeFormat(songs[albumName]['duration'], true)
+        document.getElementById('album-info-header-thing-text').innerHTML = Object.keys(songs[albumName]['songs']).length.toString() + " " + fancyTimeFormat(songs[albumName]['duration'], true)
         for (song in songs[albumName]["songs"]) {
             document.getElementById('song-list-tbody').innerHTML += await createSongListEntryFromSongData(songs[albumName]['songs'][song][0]['fileLocation']);
         }

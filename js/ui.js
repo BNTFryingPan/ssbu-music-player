@@ -112,6 +112,20 @@ function toggleSongInfoModal(state) {
     }
 }
 
+function updateNormalizationState(state) {
+    if (state) {
+        userSettings['normalizeVolume'] = true;
+        try {
+            connectAudioNormalizer()
+        } catch {}
+    } else {
+        userSettings['normalizeVolume'] = false;
+        try {
+            disconnectAudioNormalizer();
+        } catch {}
+    }
+}
+
 loadSongsFromMusicFolder()
 
 //song controls:

@@ -16,16 +16,18 @@
                 audioElem = document.getElementById(name);
                 src = audioCtx.createMediaElementSource(audioElem);
                 gainNode = audioCtx.createGain();
-                gainNode.gain.value = 1.0;
-                audioElem.onplay = function() {
-                    src.connect(gainNode);
-                    gainNode.connect(audioCtx.destination);
-                };
-                audioElem.onpause = function() {
-                    // disconnect the nodes on pause, otherwise all nodes always run
-                    src.disconnect(gainNode);
-                    gainNode.disconnect(audioCtx.destination);
-                };
+                gainNode.gain.value = 1;
+                connectAudioNormalizer();
+            }
+
+            function connectAudioNormalizer() {
+                //src.connect(gainNode);
+                //gainNode.connect(audioCtx.destination);
+            }
+
+            function disconnectAudioNormalizer() {
+                //src.disconnect(gainNode);
+                //gainNode.disconnect(audioCtx.destination);
             }
         </script>
 
@@ -79,7 +81,7 @@
                     </tr>
                     <tr title="When enabling again, will take effect when the next song starts playing">
                         <td>Enable Volume Normalization</td>
-                        <td><input id="settings-normalization" type="checkbox" checked onclick="userSettings['normalizeVolume'] = this.checked;gainNode.gain.value = 1"></td>
+                        <td><input id="settings-normalization" type="checkbox" checked onclick="updateNormalizationState(this.checked)"></td>
                     </tr>
                     <tr>
                         <td>idk, more settings soon probably</td>
@@ -234,7 +236,7 @@
                     <div id="song-info-artist"></div>
                 </div>
                 <div id='song-controls'>
-                    <input type="range" step="0.000001" max=1 min=0 id="now-playing-volume-slider" oninput="document.getElementById('song').volume = document.getElementById('now-playing-volume-slider').value" class="seek-slider">
+                    <input type="range" step="0.000001" value=1 max=1 min=0 id="now-playing-volume-slider" oninput="updateVolume()" class="seek-slider">
                     <input type="range" step="0.000001" id="now-playing-seek-slider" oninput="updateSongProgressFromBar()" class="song-progress seek-slider">
                     <span id='shuffle-state'>Random</span>
                     <input type="button" id="np-prev"    value="prev"    onclick="prevSong()">
