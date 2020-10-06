@@ -4,6 +4,7 @@ const path = require('path');
 const platfolders = require('platform-folders');
 const ewc = require('@svensken/ewc');
 const { autoUpdater } = require("electron-updater");
+const { checkForUpdates } = require("./updater")
 
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -74,7 +75,7 @@ ipcMain.on('acrylic', (_) => {
 
 ipcMain.on("updateCheck", function() {
     console.log("updatecheck");
-    autoUpdater.checkForUpdatesAndNotify();
+    checkForUpdates()
 })
 
 /*
