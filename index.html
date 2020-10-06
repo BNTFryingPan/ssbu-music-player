@@ -79,6 +79,9 @@
                     <tr>
                         <td><input id='settings-refresh-albums' value="Refesh Album List" type="button" onclick="loadAlbums()"></td>
                     </tr>
+                    <tr>
+                        <td><input id='settings-update' value="Check for updates" type="button"></td>
+                    </tr>
                     <tr title="When enabling again, will take effect when the next song starts playing">
                         <td>Enable Volume Normalization</td>
                         <td><input id="settings-normalization" type="checkbox" checked onclick="updateNormalizationState(this.checked)"></td>
@@ -93,7 +96,7 @@
                     </tr>-->
                 </table>
                 
-                <div id='settings-info'>Version Alpha 0.2.4<br>TheDerpyMemeSquad</div>
+                <div id='settings-info'>Version Alpha 0.3.2<br>TheDerpyMemeSquad</div>
             </div>
             <div id='top-menu'>
                 <div id="top-music-button" onclick="loadAlbums();openMusicMenu();" class="top-button select-hover-anim">

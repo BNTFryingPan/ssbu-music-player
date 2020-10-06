@@ -181,10 +181,14 @@ function settings_acrylic() {
     state = document.getElementById('settings-acrylic').checked;
 
     if (state) {
-        ipcRenderer.send("acrylic")
+        ipcRenderer.send("acrylic");
     } else {
-        ipcRenderer.send("disable")
+        ipcRenderer.send("disable");
     }
+}
+
+function settings_updateCheck() {
+    ipcRenderer.send("updateCheck");
 }
 
 // When document has loaded, initialise
@@ -220,6 +224,9 @@ document.onreadystatechange = () => {
             settings_acrylic()
         }
         
+        document.getElementById('settings-update').onclick = function() {
+            settings_updateCheck();
+        }
 
         //update windows styles
         var userAccentColor = remote.systemPreferences.getAccentColor().substr(0,6);

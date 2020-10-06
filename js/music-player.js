@@ -51,8 +51,31 @@ const artAssetKeyDict = {
     "Celeste (Original Soundtrack)": "celeste",
     "Celeste: Farewell (Original Soundtrack)": "farewell",
     "UNDERTALE Soundtrack": "undertale",
+    "Portal 2: Songs to Test By - Volume 1": "portal2",
+    "Portal 2: Songs to Test By - Volume 2": "portal2",
+    "Portal 2: Songs to Test By - Volume 3": "portal2",
+    "Portal 2: Songs to Test By": "portal2",
+    "Terraria Soundtrack Volume 1": "terraria-1",
+    "Terraria Soundtrack Volume 2": "terraria-2",
+    "Terraria Soundtrack Volume 3": "terraria-3",
+    "Keep Talking And Nobody Explodes - OST": "ktane",
+    "Astroneer": "astro-1",
+    "Astroneer (original game soundtrack) Volume 2": "astro-2",
+    "Subnautica Original Soundtrack": "subnautica",
+    "Hexoscope OST": "hexoscope",
+    "Aperture Tag OST": "portal-tag",
+    "Portal": "portal1",
     "%default": "unknown-album-image"
 }
+
+/* reserved names:
+unknown-album-image - ?
+source-yt - YouTube source image
+source-file - local file source image
+source-sr - Song Request image
+source-spotify - spotify source image
+source-other - other source image
+*/
 
 function getDiscordArtAssetKeyFromAlbumName(name) {
     if (artAssetKeyDict[name]) {

@@ -2,7 +2,8 @@
 const {app, BrowserWindow, ipcMain, systemPreferences, dialog} = require('electron');
 const path = require('path');
 const platfolders = require('platform-folders');
-const ewc = require('@svensken/ewc')
+const ewc = require('@svensken/ewc');
+const { autoUpdater } = require("electron-updater");
 
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -70,6 +71,12 @@ ipcMain.on('acrylic', (_) => {
     //console.log('enable')
     ewc.setAcrylic(mainWindow, 0x14800020);
 });
+
+ipcMain.on("updateCheck", function() {
+    console.log("updatecheck");
+    autoUpdater.checkForUpdatesAndNotify();
+})
+
 /*
 ipcMain.on('blurBehind', (_) => {
     ewc.setBlurBehind(mainWindow, 0x14800020);
