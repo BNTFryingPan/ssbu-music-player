@@ -12,6 +12,8 @@ async function openAlbum(albumName) {
     document.getElementById('body').setAttribute('data-currentLayer', "song-list")
     document.getElementById('album-list').style.display = "none"
     document.getElementById('song-list').style.display = "block"
+
+    nowPlaying['currentPage'] = "Music - " + albumName
     //document.querySelector("#album-info-header-thing ::before").style.content = fancyTimeFormat(songs[albumName]['duration'])
 }
 

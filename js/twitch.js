@@ -1,12 +1,13 @@
 const irc = require('dank-twitch-irc');
-const remote = require('electron').remote;
+//const remote = require('electron').remote;
 const {BrowserWindow} = require('electron');
 const ytdl = require("ytdl-core")
 
-module.exports = {
+/*module.exports = {
     beginTwitchOauthFlow: beginTwitchOauthFlow,
-    startTwitchIntegration: startTwitchIntegration
-}
+    startTwitchIntegration: startTwitchIntegration,
+    sendNewSongPlayingMessage: sendNewSongPlayingMessage
+}*/
 
 var oauth = null;
 var readyToJoinChat = true;
@@ -82,10 +83,24 @@ function updateTwitchSrPerms() {
     }
 }
 
-function sendNewSongPlayingMessage(message) {
-    if (bot.connected) {
-        bot.say(tch, message)
+function sendNewSongPlayingMessage(song, extra) {
+    if (bot.ready) {
+        extra = extra || ""
+        song = song || nowPlaying[song]
+        bot.say(tch, extra + getSongMessage(song))
     }
+}
+
+function getSongMessage(song) {
+    var nowPlayingMessage = "Now Playing: ";
+
+    if (song['type'] == "local-file") {
+        nowPlayingMessage += song['data'][0]['title'] + " from " + song['data'][0]['album'] + " by " + song['data'][0]['artist'] + " from a file."
+    } else if (song['type'] == "yt") {
+
+    }
+
+    return nowPlayingMessage;
 }
 
 function startTwitchIntegration() {
@@ -137,6 +152,7 @@ function startTwitchIntegration() {
         })
         bot.on("WHISPER", msg => {console.log(`[DM ${msg.displayName}]: ${msg.messageText}`)});
         bot.connect();
+        bot.connected = true;
         bot.join(twitchOauthData["channel_to_join"]);
         //bot.say(tch, "SSBU Music Player v0.1.2 Song Request bot is now in chat!")
     } else {

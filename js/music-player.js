@@ -21,6 +21,8 @@ var songs = {
 
 var nowPlaying = {
     "previewedAlbum": "All Songs",
+    "playbackState": "Idle",
+    "loopCount": 0,
     "openedAlbum": "",
     "song": {
         "data": null,
@@ -36,11 +38,65 @@ var nowPlaying = {
     "shuffleMode": "order", // shuffle album/playlist, random all, order, loop, sr
     "userVolumeSliderValue": 1,
     "rawNormalizationGain": 1,
+    "startTime": Date.now()
 };
 
 var userSettings = {
-    "normalizeVolume": true
+    "normalizeVolume": true,
+    "currentPage": "none"
 }
+
+const artAssetKeyDict = {
+    "A Hat in Time OST": "hatintime",
+    "Celeste (Original Soundtrack)": "celeste",
+    "Celeste: Farewell (Original Soundtrack)": "farewell",
+    "UNDERTALE Soundtrack": "undertale",
+    "%default": "unknown-album-image"
+}
+
+function getDiscordArtAssetKeyFromAlbumName(name) {
+    if (artAssetKeyDict[name]) {
+        return artAssetKeyDict[name]
+    } else {
+        return artAssetKeyDict["%default"]
+    }
+}
+
+const DiscordRPC = require("discord-rpc");
+const clientID = "659092610400387093";
+//DiscordRPC.register(clientID);
+const rpc = new DiscordRPC.Client({ transport: 'ipc' });
+//▶️ 🔂 ⏸️ 🔀
+
+async function updateRPC() {
+    if (nowPlaying['song']['data'] == null) {
+        rpc.setActivity({details: "Idle ⏹️", state: userSettings['currentPage']});
+    } else {
+        details = nowPlaying['song']['data'][0]['title'] + " ";
+        if (nowPlaying['playbackState'] == "Playing") details += "▶️";
+        else if (nowPlaying['playbackState'] == "Paused") details += "⏸️";
+        else if (nowPlaying['playbackState'] == "Idle") details += "⏹️";
+        if (nowPlaying['shuffleMode'] == 'loop') details += "🔂 " + nowPlaying["loopCount"];
+        else if (nowPlaying['shuffleMode'] == 'random all') details += "🔀";
+        rpc.setActivity({
+            details: details,
+            state: nowPlaying['song']['data'][0]['album'] + " - " + nowPlaying['song']['data'][0]['track']['no'] + "/" + nowPlaying['song']['data'][0]['track']['of'],
+            startTimestamp: nowPlaying['startTime'],
+            largeImageKey: getDiscordArtAssetKeyFromAlbumName(nowPlaying['song']['data'][0]['album']),
+            largeImageText: nowPlaying['song']['data'][0]['artist'],
+            smallImageText: nowPlaying['playbackState'],
+            smallImageKey: "unknown-album-image",
+        });
+    }
+} 
+
+rpc.on('ready', () => {
+    updateRPC();
+    //setInterval(() => {updateRPC()}, 15e3);
+})
+
+//debugger
+rpc.login({ clientId: clientID }).catch(console.error);
 
 function randomSong(source=null) {
     if (source === null) {
@@ -68,28 +124,40 @@ function pauseSong(state) {
     if (state == true || state == false) {
         if (state) {
             document.getElementById('song').pause()
+            nowPlaying['playbackState'] = "Paused"
             //console.log('pause a')
         } else {
             document.getElementById('song').play()
+            nowPlaying['playbackState'] = "Playing"
             //console.log('play a')
         }
     } else {
         if (document.getElementById('song').paused) {
             document.getElementById('song').play()
+            nowPlaying['playbackState'] = "Playing"
             //console.log('pause')
         } else {
             document.getElementById('song').pause()
+            nowPlaying['playbackState'] = "Paused"
             //console.log('play')
         }
     }
+    updateRPC()
 }
 
 function nextSong() {
     if (nowPlaying['shuffleMode'] == "loop") {
+        nowPlaying['loopCount']++;
         document.getElementById('song').currentTime = 0;
         document.getElementById('song').play();
+        nowPlaying['playbackState'] = "Playing";
+        nowPlaying['startTime'] = Date.now();
+        updateRPC()
     } else if (nowPlaying['shuffleMode'] == "shuffle") {
-        playSongFromFile(randomSong()['file'])
+        let next = randomSong()
+        playSongFromFile(next['file'])
+        sendNewSongPlayingMessage(next)
+        nowPlaying['loopCount'] = 0;
     } else if (nowPlaying['shuffleMode'] == "order") {
         if (nowPlaying['shuffleSource']['type'] == "album") {
             var nextSongIndex = nowPlaying['song']['index']
@@ -99,22 +167,31 @@ function nextSong() {
             
             playSongFromFile(nowPlaying['shuffleSource']['songFilePaths'][nextSongIndex])
             nowPlaying['song']['index'] = nextSongIndex;
+            
         } else if (nowPlaying['shuffleSource']['type'] == "playlist") {
             alert('whoops, you found playlists, bye')
         }
+        nowPlaying['loopCount'] = 0;
     } else {
         playSongFromFile(randomSong()['data'][0]['fileLocation']);
         nowPlaying['shuffleMode'] = "shuffle";
+        nowPlaying['loopCount'] = 0;
         alert("invalid shuffle mode, reverted to shuffle")
     }
+
+    
 }
 
 function prevSong() {
     if (document.getElementById('song').currentTime <= 3) {
         document.getElementById('song').currentTime = 0;
+        nowPlaying['startTime'] = Date.now();
+        updateRPC();
         alert('wip');
     } else {
         document.getElementById('song').currentTime = 0;
+        nowPlaying['startTime'] = Date.now();
+        updateRPC();
     }
 }
 
@@ -134,7 +211,7 @@ var isChangingSong = false;
 
 function updateVolume() {
     nowPlaying['userVolumeSliderValue'] = document.getElementById('now-playing-volume-slider').value;
-    gainNode.gain.value = nowPlaying['rawNormalizationGain'] * nowPlaying['userVolumeSliderValue'];//, audioCtx.currentTime);
+    //gainNode.gain.value = nowPlaying['rawNormalizationGain'] * nowPlaying['userVolumeSliderValue'];//, audioCtx.currentTime);
     //gainNode.gain.value = 0;
 }
 
@@ -144,21 +221,24 @@ function songTick() {
     if (song.ended && !isChangingSong) {
         nextSong();
         isChangingSong = true;
-        sendNewSongPlayingMessage("Now Playing: " + nowPlaying['song']['data'][0]['title'] + " from " + nowPlaying['song']['data'][0]['album'] + " by " + nowPlaying['song']['data'][0]['artist'] + " from a file.");
+        //sendNewSongPlayingMessage("Now Playing: " + nowPlaying['song']['data'][0]['title'] + " from " + nowPlaying['song']['data'][0]['album'] + " by " + nowPlaying['song']['data'][0]['artist'] + " from a file.");
     } else if (song.currentTime >= song.duration/100) {
         isChangingSong = false;
     }
 
     //TODO: add seek slider, and update it here
     document.getElementById('now-playing-seek-slider').value = song.currentTime;
-    if (!calculatingGain) {
+    song.volume = nowPlaying['userVolumeSliderValue']
+    /*if (!calculatingGain) {
         document.getElementById("song-info-normalization").innerHTML = gainNode.gain.value + " = " + nowPlaying['rawNormalizationGain'] + "x" + nowPlaying['userVolumeSliderValue'];
     } else {
         document.getElementById("song-info-normalization").innerHTML = gainNode.gain.value + " = " + nowPlaying['rawNormalizationGain'] + "x" + nowPlaying['userVolumeSliderValue'] + " (Recalculating...)"
-    }
+    }*/
 }
 
 // MediaNextTrack, MediaPreviousTrack, MediaStop and MediaPlayPause
+
+
 
 window.setInterval(function(){
     songTick();

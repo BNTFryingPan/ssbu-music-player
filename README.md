@@ -3,12 +3,12 @@ A music player that has a UI based on the UI of the Super Smash Bros. Ultimate m
 
 # Current Features
 - Partial Twitch integration
-    - Currently can say in chat what you are currently listening to
+    - Currently can say in chat what you are currently listening to when a user does !song
     - See planned features for more
 - Can shuffle music from your default music directory (on windows C:/Users/\<user\>/Music)
 - Automatically sorts them into albums from which they are from, as well as an album that shows songs that are not in albums and an album that lists all songs
 - Has some fancy transparent Acrylic effects (that can be disabled if you want)
-- Volume normalization. Got a loud song and a quiet song? The loud song will play quieter, and the quiet song will play louder (can be turned off)
+- (Disabled for now because its buggy) Volume normalization. Got a loud song and a quiet song? The loud song will play quieter, and the quiet song will play louder (can be turned off)
 
 # Planned Features
 Checked off boxes are currntly being worked on
@@ -19,6 +19,7 @@ Checked off boxes are currntly being worked on
     - [ ] changing volume
     - [ ] pausing music
     - [ ] full permission control based on twitch 'ranks' (Viewer, Subscriber, VIP, Moderator, Broadcaster)
+    - [ ] better login experience
     - [ ] all features being optional
 - [ ] YouTube Integration
     - [ ] Playlist support

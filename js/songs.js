@@ -10,18 +10,20 @@ function getSongImage(song) {
 }
 
 var calculatingGain = false;
+var audioCtx = new AudioContext();
+var src;
 
 async function playSongFromFile(file) {
-    console.log(file)
+    //console.log(file)
     songData = await getSongData(file);
     var song = document.getElementById("song")
     song.src = file;
-    console.log(songs[songData[0]["album"]])
+    //console.log(songs[songData[0]["album"]])
 
     //var song = document.getElementById(name);
     //var src = audioCtx.createMediaElementSource(song);
     //var gainNode = audioCtx.createGain();
-    if (userSettings['normalizeVolume']) {
+    /*if (userSettings['normalizeVolume']) {
         calculatingGain = true;
         document.getElementById("song-info-normalization").innerHTML = gainNode.gain.value + " (Recalculating...)";
         if (songs[songData[0]["album"]]['songs'][file][1]['normalization']) {
@@ -72,10 +74,12 @@ async function playSongFromFile(file) {
     } else {
         //gainNode.gain.value = 0.5;
         disconnectAudioNormalizer()
-    }
-
-    if (true) {
-        //var src = audioCtx.createMediaElementSource(song);
+    }*/
+    
+    if (false) {
+        audioCtx.close()
+        audioCtx = new AudioContext()
+        src = audioCtx.createMediaElementSource(song);
         var analyser = audioCtx.createAnalyser();
 
         var canvas = document.getElementById("visualizer-canvas");
@@ -133,6 +137,7 @@ async function playSongFromFile(file) {
     nowPlaying['currentSource'] = "local-files"
     nowPlaying['song']['type'] = "local-file"
     nowPlaying['song']['data'] = songData;
+    nowPlaying['startTime'] = Date.now();
     //nowPlaying['song']['index'] = songs['All Songs']['songs'].indexOf(songData)
     //console.log("song playing")
 
@@ -150,8 +155,10 @@ async function playSongFromFile(file) {
     var seek = document.getElementById('now-playing-seek-slider');
 
     song.play();
+    nowPlaying['playbackState'] = "Playing"
     seek.max = songData[1].duration;
     seek.value = 0;
+    updateRPC();
 }
 
 async function createSongListEntryFromSongData(fileLocation) {
@@ -204,41 +211,15 @@ async function getSongData(fileName) {
         songData['title'] = title
     }
 
-    if (!songData['track']["no"]) {
-        songData['track']["no"] = "--"
-    }
-
-    if (!songData['track']['of']) {
-        songData['track']['of'] = "--"
-    }
-
-    if (!songData['album']) {
-        songData['album'] = "Other"
-    }
-
-    if (!songData['artist']) {
-        songData['artist'] = "Unknown"
-    }
-
-    if (!songData['genre']) {
-        songData['genre'] = ["Unknown"]
-    }
-
-    if (!songData['comment']) {
-        songData['comment'] = ["No Comment"]
-    }
-
-    if (!songData['year']) {
-        songData['year'] = 0
-    }
-
-    if (!songData["disk"]['no']) {
-        songData['disk']["no"] = "-";
-    }
-
-    if (!songData['disk']['of']) {
-        songData['disk']['of'] = "-"
-    }
+    songData['track']["no"] = songData['track']["no"] || "--";
+    songData['track']["of"] = songData['track']["of"] || "--";
+    songData['album'] = songData['album'] || "Other";
+    songData['artist'] = songData['artist'] || "Unknown";
+    songData['genre'] = songData['genre'] || ["Unknown"];
+    songData['comment'] = songData['comment'] || ["No Comment"];
+    songData['year'] = songData['year'] || 0;
+    songData['disk']["no"] = songData['disk']["no"] || "-";
+    songData['disk']["of"] = songData['disk']["of"] || "-";
 
     songData['duration'] = fancyTimeFormat(metaData["duration"]);
     songData['fileLocation'] = fileName.replace(/\\/g, "/");

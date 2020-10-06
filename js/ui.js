@@ -59,6 +59,7 @@ function openMusicMenu() {
     document.getElementById('album-list').style.display = "flex"
     document.getElementById('list-container').style.display = "block"
     document.getElementById('normal').hidden = false;
+    nowPlaying['currentPage'] = "Music Page"
     updateTitle("Vault > Sounds > Music")
 }
 
@@ -67,6 +68,7 @@ function setSettingsOpenState(state) {
         //document.getElementById('body').setAttribute('data-prevLayer', document.getElementById('body').getAttribute('data-currentLayer'))
         document.getElementById('body').setAttribute('data-settingsOpen', "true")
         document.getElementById('top-settings').style.display = "block";
+        nowPlaying['currentPage'] = "Settings"
     } else {
         document.getElementById('body').setAttribute('data-settingsOpen', "false")
         document.getElementById('top-settings').style.display = "none";
@@ -79,6 +81,7 @@ function openPlaylistMenu() {
     document.getElementById('playlist-list').style.display = "block"
     document.getElementById('list-container').style.display = "block"
     document.getElementById('normal').hidden = false;
+    nowPlaying['currentPage'] = "Playlists"
     updateTitle("Vault > Sounds > Playlists")
 }
 
@@ -88,6 +91,7 @@ function openServicesMenu() {
     document.getElementById('services').style.display = "block";
     document.getElementById('normal').hidden = false;
     document.getElementById('list-container').style.display = "none"
+    nowPlaying['currentPage'] = "Services"
     updateTitle("Vault > Sounds > Services")
 }
 
@@ -124,6 +128,126 @@ function updateNormalizationState(state) {
             disconnectAudioNormalizer();
         } catch {}
     }
+}
+
+const remote = require('electron').remote;
+const { ipcRenderer } = require('electron');
+
+function titlebar_min() {
+    let win = remote.getCurrentWindow();
+    win.minimize();
+}
+
+function titlebar_close() {
+    window.close();
+}
+
+function titlebar_maxres() {
+    let win = remote.getCurrentWindow();
+    if (win.isMaximized()) win.unmaximize();
+    else win.maximize();
+}
+
+function titlebar_back() {
+    var curLayer = document.getElementById('body').getAttribute('data-currentLayer');
+    var settingsOpen = document.getElementById('body').getAttribute('data-settingsOpen') == "true";
+    var songInfoOpen = document.getElementById('body').getAttribute('data-songInfoOpen') == "true";
+    
+    if (settingsOpen) {
+        setSettingsOpenState(false);
+    } else if (songInfoOpen) {
+        toggleSongInfoModal(false);
+    } else if (['album-list', 'playlist-menu', 'services-menu'].includes(curLayer)) {
+        setTopMenuVisible(true);
+    } else if (curLayer == 'song-list') {
+        document.getElementById('album-list').style.display = "flex";
+        document.getElementById('song-list').style.display = "none"
+        document.getElementById('body').setAttribute('data-currentLayer', "album-list")
+        nowPlaying['currentPage'] = "Music Page"
+    } else {
+        return;
+    }
+}
+
+function titlebar_settings() {
+    if (document.getElementById('top-settings').style.display == "none") {
+        setSettingsOpenState(true)
+    } else {
+        setSettingsOpenState(false)
+    }
+}
+
+function settings_acrylic() {
+    state = document.getElementById('settings-acrylic').checked;
+
+    if (state) {
+        ipcRenderer.send("acrylic")
+    } else {
+        ipcRenderer.send("disable")
+    }
+}
+
+// When document has loaded, initialise
+document.onreadystatechange = () => {
+    if (document.readyState == "complete") {
+        handleWindowControls();
+        document.getElementById('min-button').onclick = function() {
+            titlebar_min()
+        };
+        
+        document.getElementById('max-button').onclick = function() {
+            titlebar_maxres()
+        };
+        
+        document.getElementById('restore-button').onclick = function() {
+            titlebar_maxres()
+        };
+        
+        document.getElementById('close-button').onclick = function() {
+            titlebar_close()
+        };
+
+        document.getElementById('back-button').onclick = function() {
+            titlebar_back()
+        };
+
+        document.getElementById('settings-button').onclick = function() {
+            titlebar_settings()
+            
+        };
+
+        document.getElementById('settings-acrylic').onclick = function() {
+            settings_acrylic()
+        }
+        
+
+        //update windows styles
+        var userAccentColor = remote.systemPreferences.getAccentColor().substr(0,6);
+        document.documentElement.style.setProperty("--user-accent-color", "#" + userAccentColor);
+    }
+    
+};
+
+function handleWindowControls() {
+    let win = remote.getCurrentWindow();
+    toggleMaxRestoreButtons();
+    win.on('maximize', toggleMaxRestoreButtons);
+    win.on('unmaximize', toggleMaxRestoreButtons);
+
+    function toggleMaxRestoreButtons() {
+        if (win.isMaximized()) {
+            document.body.classList.add('maximized');
+        } else {
+            document.body.classList.remove('maximized');
+        }
+    }
+}
+
+window.onbeforeunload = function(){
+    let win = remote.getCurrentWindow();
+    win.removeAllListeners()
+    //document.getElementById('max-button').onclick = undefined
+    //document.getElementById('restore-button').onclick = undefined
 }
 
 loadSongsFromMusicFolder()

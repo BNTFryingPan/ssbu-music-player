@@ -1,0 +1,17 @@
+v3.0
+Added Discord Rich Presence
+    Shows playing song, shuffle mode, and playback state
+    Album, track, time playing the song
+    Shows song source (youtube, local file, etc...)
+    Shows album art for select albums. Look in SupportedAlbumArts.txt for a list
+    Added album art for A Hat in Time OST, Celeste OST (and Farewell), and Undertale OST
+    Shows artist on the large image
+Tried improving twitch integration. Its still jank.
+    Fixed some logic that didnt work for some reason
+    attempted to make automatic song announcements (will be a setting, but it doesnt work anyways lol)
+Disabled visualizer and normalization for now, because it causes more issues than it solves currently
+    Actively looking for a fix
+Made this changelog. Will probably put it in the the music player itself at some point
+
+I should probably add changelogs for older versions, but i literally forget what was in each version lol.
+look at commits if you really care that much

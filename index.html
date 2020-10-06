@@ -6,18 +6,18 @@
 
         <link rel="stylesheet" href="style.css">
         <script>
-            var audioCtx = new AudioContext();
-            var audioElem;
-            var src;
-            var gainNode;
+            //var audioCtx = new AudioContext();
+            //var audioElem;
+            //var src;
+            //var gainNode;
             // http://wiki.hydrogenaud.io/index.php?title=ReplayGain_specification
             // TODO: do the loudness filtering (Butterworth, Yulewalk) IIR filters
             function normalizedAudioElement(name) {
-                audioElem = document.getElementById(name);
-                src = audioCtx.createMediaElementSource(audioElem);
-                gainNode = audioCtx.createGain();
-                gainNode.gain.value = 1;
-                connectAudioNormalizer();
+                //audioElem = document.getElementById(name);
+                //src = audioCtx.createMediaElementSource(audioElem);
+                //gainNode = audioCtx.createGain();
+                //gainNode.gain.value = 1;
+                //connectAudioNormalizer();
             }
 
             function connectAudioNormalizer() {
@@ -86,11 +86,11 @@
                     <tr>
                         <td>idk, more settings soon probably</td>
                     </tr>
-                    <tr>
+                    <!--<tr>
                         <td>
                             <iframe width="560" height="315" src="https://www.youtube.com/embed/eKC2ykkYWDY?controls=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                         </td>
-                    </tr>
+                    </tr>-->
                 </table>
                 
                 <div id='settings-info'>Version Alpha 0.2.4<br>TheDerpyMemeSquad</div>
@@ -125,7 +125,7 @@
                     <div id="s-content">
                         <div id="s-yt-test-area">
                             <div id="player"></div>
-                            <script>
+                            <!--<script>
                                 // 2. This code loads the IFrame Player API code asynchronously.
                                 var tag = document.createElement('script');
 
@@ -166,7 +166,7 @@
                                 function stopVideo() {
                                     player.stopVideo();
                                 }
-                            </script>
+                            </script>-->
                         </div>
                         <div id="s-twitch-div">
                             <span>Twitch Integration</span>
@@ -254,7 +254,7 @@
         <script>
             // You can also require other files to run in this process
             require('./renderer.js');
-            normalizedAudioElement("song");
+            //normalizedAudioElement("song");
         </script>
         <script src="./js/playlists.js"></script>
         <script src="./js/songs.js"></script>
