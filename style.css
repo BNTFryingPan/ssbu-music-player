@@ -323,6 +323,17 @@ p {
     backdrop-filter: blur(5px);
 }
 
+#top-updater {
+    position: fixed;
+    z-index: 10;
+    top: 15%;
+    left: 10%;
+    border: solid 1px #fff;
+    height: 70%;
+    width: 80%;
+    backdrop-filter: blur(5px);
+}
+
 #song-controls {
     position: absolute;
     bottom: 0;

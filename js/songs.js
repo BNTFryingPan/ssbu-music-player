@@ -14,6 +14,7 @@ var audioCtx = new AudioContext();
 var src;
 
 async function playSongFromFile(file) {
+    //console.log("hey it updated poggers")
     //console.log(file)
     songData = await getSongData(file);
     var song = document.getElementById("song")

@@ -5,3 +5,8 @@
 // selectively enable features needed in the rendering
 // process.
 
+const { ipcRenderer } = require("electron");
+
+ipcRenderer.on('update_available', (e) => {
+    
+}) 

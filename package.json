@@ -1,6 +1,6 @@
 {
     "name": "ssbu-music-player",
-    "version": "0.3.4",
+    "version": "0.3.3",
     "description": "A music player that looks like 'Sounds' in 'Vault' in SSBU",
     "main": "main.js",
     "build": {
@@ -14,9 +14,15 @@
         ],
         "win": {
             "target": [
-                "nsis",
-                "zip"
-            ]
+                "nsis"
+            ],
+            "verifyUpdateCodeSignature": false
+        },
+        "nsis": {
+            "oneClick": false,
+            "allowToChangeInstallationDirectory": true,
+            "deleteAppDataOnUninstall": true,
+            "runAfterFinish": false
         },
         "icon": "icon.png"
     },
@@ -24,7 +30,7 @@
         "start": "electron .",
         "pack": "electron-builder --dir",
         "dist": "electron-builder",
-        "release": "electron-builder -p always"
+        "release": "electron-builder --win -p always"
     },
     "repository": "https://github.com/leotomasmc/ssbu-music-player",
     "keywords": [
@@ -44,6 +50,7 @@
         "custom-electron-titlebar": "^3.1.0",
         "dank-twitch-irc": "3.0.5",
         "discord-rpc": "^3.1.4",
+        "electron-log": "^4.2.4",
         "electron-updater": "^4.3.5",
         "iohook": "^0.6.2",
         "jquery": "^3.5.1",
