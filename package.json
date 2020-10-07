@@ -1,8 +1,12 @@
 {
     "name": "ssbu-music-player",
-    "version": "0.3.4",
+    "version": "0.3.3",
     "description": "A music player that looks like 'Sounds' in 'Vault' in SSBU",
     "main": "main.js",
+    "publish": {
+        "provider": "github",
+        "releaseType": "release"
+    },
     "build": {
         "appId": "io.github.leotomas.ssbu-music-player",
         "publish": [
@@ -32,7 +36,10 @@
         "dist": "electron-builder",
         "release": "electron-builder --win -p always"
     },
-    "repository": "https://github.com/leotomasmc/ssbu-music-player",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/leotomasmc/ssbu-music-player"
+    },
     "keywords": [
         "Electron",
         "music",
