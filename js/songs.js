@@ -14,7 +14,7 @@ var audioCtx = new AudioContext();
 var src;
 
 async function playSongFromFile(file) {
-    console.log("hey it updated poggers")
+    //console.log("hey it updated poggers")
     //console.log(file)
     songData = await getSongData(file);
     var song = document.getElementById("song")
@@ -189,16 +189,18 @@ async function getSongData(fileName) {
     await mm.parseFile(fileName, {duration: true}).then(metadata => {songData = metadata['common']; metaData = metadata['format']});
     var folderPathNames = fileName.replace(/\\/g, "/").split("/");
     //console.log(folderPathNames);
-    folderPathNames.reverse().pop();
+    //folderPathNames.reverse().pop();
     //console.log(folderPathNames);
-    folderPathNames.reverse();
+    //folderPathNames.reverse();
     //console.log(folderPathNames);
     var folderPath = ""
     for (dir in folderPathNames) {
-        folderPath += folderPathNames[dir]
-        if (dir < folderPathNames.length-1) {
+        if (dir < folderPathNames.length-1 && dir != 0) {
             folderPath += "/"
+        } else if (dir == folderPathNames.length-1) {
+            break
         }
+        folderPath += folderPathNames[dir]
     }
     //console.log(folderPathNames);
     //return

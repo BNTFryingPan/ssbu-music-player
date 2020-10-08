@@ -35,7 +35,7 @@ var nowPlaying = {
     "currentPlaylist": null,
     "currentSource": null,
     "shuffleSource": songs['All Songs'],
-    "shuffleMode": "order", // shuffle album/playlist, random all, order, loop, sr
+    "shuffleMode": "shuffleall", // shuffleall, loop, order, shufflealbum
     "userVolumeSliderValue": 1,
     "rawNormalizationGain": 1,
     "startTime": Date.now()
@@ -176,8 +176,13 @@ function nextSong() {
         nowPlaying['playbackState'] = "Playing";
         nowPlaying['startTime'] = Date.now();
         updateRPC()
-    } else if (nowPlaying['shuffleMode'] == "shuffle") {
-        let next = randomSong()
+    } else if (nowPlaying['shuffleMode'] == "shuffleall") {
+        let next = randomSong(songs['All Songs'])
+        playSongFromFile(next['file'])
+        sendNewSongPlayingMessage(next)
+        nowPlaying['loopCount'] = 0;
+    } else if (nowPlaying['shuffleMode'] == "shufflealbum") {
+        let next = randomSong(songs[nowPlaying['song']['data'][0]['album']])
         playSongFromFile(next['file'])
         sendNewSongPlayingMessage(next)
         nowPlaying['loopCount'] = 0;
@@ -220,14 +225,16 @@ function prevSong() {
 
 function shuffleSongs() {
     if (nowPlaying['shuffleMode'] == "loop") {
-        nowPlaying["shuffleMode"] = "shuffle";
-    } else if (nowPlaying['shuffleMode'] == "shuffle") {
+        nowPlaying["shuffleMode"] = "shuffleall";
+    } else if (nowPlaying['shuffleMode'] == "shuffleall") {
         nowPlaying["shuffleMode"] = "order";
     } else if (nowPlaying['shuffleMode'] == "order") {
+        nowPlaying["shuffleMode"] = "shufflealbum"
+    } else if (nowPlaying['shuffleMode'] == "shufflealbum") {
         nowPlaying["shuffleMode"] = "loop"
     }
 
-    document.getElementById('shuffle-state').innerHTML = nowPlaying['shuffleMode'];
+    updateShuffleModeText()
 }
 
 var isChangingSong = false;
@@ -261,8 +268,13 @@ function songTick() {
 
 // MediaNextTrack, MediaPreviousTrack, MediaStop and MediaPlayPause
 
-
-
+var elec = require('electron');
+if (elec.remote.app.isPackaged) {
+    document.getElementById("version-display").innerHTML = elec.app.getVersion() + " ";
+    console.log("Production Build");
+} else {
+    document.getElementById("version-display").innerHTML = require("./package.json").version + " "
+}
 window.setInterval(function(){
     songTick();
 }, 25)

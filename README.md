@@ -1,6 +1,14 @@
 # ssbu-music-player
 A music player that has a UI based on the UI of the Super Smash Bros. Ultimate music interface.
 
+# notice
+v0.3.8 added a caching feature to the song list for albums, so opening the page for an album will be faster. This may cause issues if you move folders around or add/remove tracks from a folder/album in explorer. If you have any problems, open the folder, and delete the .ssbu-music file, which should clear the cache of the song list. The next time you open that album, the song list will be re-created, which may take a second, depending on how many songs are in that album.
+
+# Known Issues
+v0.3.8
+- Caching (see above)
+- Song list is not sorted by track number (its sorted by whatever order it reads files in)
+
 # Current Features
 - Partial Twitch integration
     - Currently can say in chat what you are currently listening to when a user does !song

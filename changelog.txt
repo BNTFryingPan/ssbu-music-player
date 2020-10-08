@@ -1,4 +1,20 @@
-v3.0
+v0.3.8
+Added caching to the song list for each album. Check the readme if you have any issues with
+    moving folders or songs around.
+
+v0.3.7
+Added updater, its not fully automatic
+    to check for an install an update, open settings and click check for updates
+    if there is an update, it will ask if you want to download it
+        if you click yes, it will download and then prompt you to restart the player, which will then install the update
+        if you click no, nothing will happen
+    if there is no update, it says there is no update available
+made version number show in title bar instead of settings screen and it pulls version number from package.json instead of hardcoded html
+
+v0.3.1 - v0.3.5
+literally just testing updater, so i skipped to 0.3.7 bc i can lol
+
+v0.3.0
 Added Discord Rich Presence
     Shows playing song, shuffle mode, and playback state
     Album, track, time playing the song

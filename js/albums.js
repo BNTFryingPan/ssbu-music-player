@@ -1,12 +1,24 @@
 async function openAlbum(albumName) {
     console.log(nowPlaying['openedAlbum'])
+    var path = "null";
+    for (song in songs[albumName]['songs']) {
+        path = songs[albumName]['songs'][song][0]['folder']
+        break
+    }
+    
     if (nowPlaying['openedAlbum'] != albumName) {
-        document.getElementById('song-list-tbody').innerHTML = "";
-        document.getElementById('album-info-header-img').src = songs[albumName]['albumArt']
-        document.getElementById('album-info-header-thing-text').innerHTML = Object.keys(songs[albumName]['songs']).length.toString() + " " + fancyTimeFormat(songs[albumName]['duration'], true)
-        for (song in songs[albumName]["songs"]) {
-            document.getElementById('song-list-tbody').innerHTML += await createSongListEntryFromSongData(songs[albumName]['songs'][song][0]['fileLocation']);
+        let attemptedLoad = loadAlbumHtmlFromFile(path, albumName);
+        if (attemptedLoad != false) {
+            document.getElementById('song-list-tbody').innerHTML = attemptedLoad;
+        } else {
+            document.getElementById('song-list-tbody').innerHTML = "";
+            for (song in songs[albumName]["songs"]) {
+                document.getElementById('song-list-tbody').innerHTML += await createSongListEntryFromSongData(songs[albumName]['songs'][song][0]['fileLocation']);
+            }
+            saveAlbumHtmlToFile(path, albumName, document.getElementById("song-list-tbody").innerHTML.toString())
         }
+        document.getElementById('album-info-header-img').src = songs[albumName]['albumArt'];
+        document.getElementById('album-info-header-thing-text').innerHTML = Object.keys(songs[albumName]['songs']).length.toString() + " - " + fancyTimeFormat(songs[albumName]['duration'], true);
         nowPlaying['openedAlbum'] = albumName
     }
     document.getElementById('body').setAttribute('data-currentLayer', "song-list")

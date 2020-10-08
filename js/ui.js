@@ -1,4 +1,4 @@
-const fs = require('fs');
+//fs = require('fs');
 const mm = require('music-metadata');
 const util = require('util');
 const platFolders = require('platform-folders');
@@ -29,7 +29,10 @@ function fancyTimeFormat(time, forceHours)
     return ret;
 }
 
-
+function updateShuffleModeText() {
+    let states = {"shuffleall": "Shuffle All", "shufflealbum": "Shuffle Album", "loop": "Loop", "order": "Order"}
+    document.getElementById('shuffle-state').innerHTML = states[nowPlaying['shuffleMode']] || "Unknown";
+}
 
 function updateTitle(text) {
     document.getElementById('window-title-text').innerHTML = text

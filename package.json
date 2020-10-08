@@ -1,6 +1,6 @@
 {
     "name": "ssbu-music-player",
-    "version": "0.3.4",
+    "version": "0.3.8",
     "description": "A music player that looks like 'Sounds' in 'Vault' in SSBU",
     "main": "main.js",
     "publish": {
@@ -23,10 +23,9 @@
             "verifyUpdateCodeSignature": false
         },
         "nsis": {
-            "oneClick": false,
-            "allowToChangeInstallationDirectory": true,
+            "oneClick": true,
             "deleteAppDataOnUninstall": true,
-            "runAfterFinish": false
+            "runAfterFinish": true
         },
         "icon": "icon.png"
     },

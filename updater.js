@@ -1,9 +1,13 @@
 const { dialog } = require('electron')
 const { autoUpdater } = require('electron-updater')
 
+autoUpdater.logger = require('electron-log');
+autoUpdater.logger.transports.file.level = "silly"
+autoUpdater.logger.info("set up logger")
 autoUpdater.autoDownload = false
 
 autoUpdater.on('error', (error) => {
+    autoUpdater.logger.info("error")
     dialog.showErrorBox('Error: ', error == null ? "unknown" : (error.stack || error).toString())
 })
 
@@ -13,9 +17,11 @@ autoUpdater.on('update-available', () => {
         title: 'Found Updates',
         message: 'Found updates, do you want update now?',
         buttons: ['Sure', 'No']
-    }, (buttonIndex) => {
-        if (buttonIndex === 0) {
-        autoUpdater.downloadUpdate()
+    }).then((buttonIndex, cb) => {
+        autoUpdater.logger.info(buttonIndex);
+        if (buttonIndex.response === 0) {
+            autoUpdater.logger.info("attempting download")
+            autoUpdater.downloadUpdate()
         }
     })
 })
@@ -33,7 +39,7 @@ autoUpdater.on('update-downloaded', () => {
     dialog.showMessageBox({
         title: 'Install Updates',
         message: 'Updates downloaded, application will be quit for update...'
-    }, () => {
+    }).then( () => {
         setImmediate(() => autoUpdater.quitAndInstall())
     })
 })
