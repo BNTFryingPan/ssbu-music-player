@@ -1,6 +1,6 @@
 var songs = {
     "All Songs": {
-        "albumArt": "./other-album.png",
+        "albumArt": "./assets/other-album.png",
         "extraText": "All",
         "type": "album",
         "artists": [],
@@ -9,7 +9,7 @@ var songs = {
         "songFilePaths": []
     },
     "Other": {
-        "albumArt": './other-album.png',
+        "albumArt": './assets/other-album.png',
         "extraText": "Other",
         "type": "album",
         "artists": [], // this would have all songData['albumartist']'s in it,
@@ -270,7 +270,7 @@ function songTick() {
 
 var elec = require('electron');
 if (elec.remote.app.isPackaged) {
-    document.getElementById("version-display").innerHTML = elec.app.getVersion() + " ";
+    document.getElementById("version-display").innerHTML = elec.remote.app.getVersion() + " ";
     console.log("Production Build");
 } else {
     document.getElementById("version-display").innerHTML = require("./package.json").version + " "

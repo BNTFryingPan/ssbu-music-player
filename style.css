@@ -6,6 +6,8 @@ draw 2 rectages, S and T
 P(S n T) = 0.3125
 P(T U S) = 0.625
 find P(S | T) and P(T | S)
+
+lol math notes
 */
 
 
@@ -94,7 +96,8 @@ p {
     background-color: #000000cc;
     z-index: 0;
     padding: 10px;
-    margin: 1%;
+    margin: 0%;
+    margin-bottom: 4%;
     width: 93%;
     min-height: 1%;
     height: auto;
@@ -113,7 +116,10 @@ p {
 
 #list-container, #services {
     overflow-y: scroll;
-    padding: 5%;
+    padding-left: 5%;
+    padding-right: 5%;
+    padding-top: 0%;
+    padding-bottom: 5%;
     height: 100%;
     width: calc(70% - 1px);
     display: block;
@@ -122,28 +128,73 @@ p {
     right: 0;
 }
 
+.list-spacer {
+    height: calc(11em - 1px + 40px)
+}
+
+#list-container-scrollbar {
+    -webkit-appearance: none; /* WebKit */
+    transform: rotate(90deg);
+    transform-origin: top right;
+    height: 8px;
+    width: calc(100vh - 10em - 32px + 8px);
+    padding: 0;
+    margin: 0;
+    background: #1C47F6;
+    outline: none;
+    z-index: 0;
+    position: fixed;
+    bottom: -8px;
+    right: 5px;
+}
+
+#list-container-scrollbar::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #40d0e0;
+    cursor: grab;
+    opacity: 0.5;
+}
+
+#list-container-scrollbar:hover::-webkit-slider-thumb {
+    opacity: 0.8
+}
+
+#list-container-scrollbar::-webkit-slider-thumb:active {
+    cursor: grabbing;
+}
+
+#list-container-scrollbar::-webkit-slider-thumb:hover {
+    opacity: 1;
+}
+
 #list-container::-webkit-scrollbar {
-    width: 10px;
+    width: 0px;
     height: 10em;
     position: fixed;
+    margin: 1px;
     bottom: 0;
     right: 0;
     padding: 0;
 }
+/*
 #list-container::-webkit-scrollbar-track {
     background : #555999;
     border-radius: 10px;
     padding: 0;
     position: fixed;
     bottom: 0;
-    right: 0;
+    right: 1px;
 }
 
 #list-container::-webkit-scrollbar-thumb {
     background : rgba(255,255,255,0.5);
     border-radius: 10px;
     box-shadow:  0 0 6px rgba(0, 0, 0, 0.5);
-}
+}*/
 
 #top-playlist-button {
     background-color: #B87500;
@@ -155,10 +206,10 @@ p {
 #now-playing {
     background-color: #1B4CFE44;
     position: fixed;
-    left: 1px;
-    top: 1px;
-    height: calc(100% - 2px);
-    width: calc(30% - 1px);
+    left: 0px;
+    top: 0px;
+    height: calc(100%);
+    width: calc(30%);
     padding: 0;
 }
 
@@ -166,21 +217,37 @@ p {
     z-index: 2;
 }
 
-#song-controls > input[type="button"] {
+#song-buttons {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    bottom: 1.5em;
+}
+
+#song-sliders {
+    position: absolute;
+    bottom: calc(50px + 3em);
+    width: 100%;
+}
+
+#song-buttons > input {
     background-color: blue;
     color: #fff;
     font-size: large;
+    height: 50px;
     padding: 10px;
     margin: 2px;
     border-radius: 10px;
 }
 
-#song-controls > #np-prev {
-    border-radius: 15px 15px 0px 0px;
+#np-prev {
+    border-radius: 15px 10px 10px 15px !important;
 }
 
 #np-pause {
-
+    
 }
 
 #np-next {
@@ -188,7 +255,14 @@ p {
 }
 
 #np-shuffle {
+    border-radius: 10px 15px 15px 10px !important;
+}
 
+#shuffle-state {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
 }
 
 .seek-slider {
@@ -410,7 +484,8 @@ p {
 
 #song-alb-img > img {
     position: absolute;
-    left: 25%;
+    left: 50%;
+    transform: translate(-50%, 0%)
 }
 
 #song-alb-img > span {
@@ -422,10 +497,10 @@ p {
 
 #album-info-header {
     position: fixed;
-    right: 1px;
-    top: 1px;
-    width: calc(70% - 1px);
-    height: calc(10em - 1px);
+    right: 0px;
+    top: 0px;
+    width: calc(70%);
+    height: calc(10em);
     padding: 32px;
     z-index: 5;
     background-color: #0C59DBDD;

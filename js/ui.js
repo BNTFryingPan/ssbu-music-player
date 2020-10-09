@@ -253,6 +253,25 @@ function handleWindowControls() {
     }
 }
 
+function updateScrollbar() {
+    let list = document.getElementById("list-container")
+    let bar = document.getElementById("list-container-scrollbar")
+    bar.value = list.scrollTop;
+    bar.max = list.scrollHeight - list.clientHeight;
+}
+
+document.getElementById("list-container").onscroll = function(e) {
+    setTimeout(updateScrollbar, 0)
+}
+
+document.getElementById("list-container-scrollbar").oninput = function(e) {
+    let list = document.getElementById("list-container")
+    let bar = document.getElementById("list-container-scrollbar")
+    list.scrollTop = bar.value;
+    bar.max = list.scrollHeight - list.clientHeight;
+    console.log("input")
+}
+
 window.onbeforeunload = function(){
     let win = remote.getCurrentWindow();
     win.removeAllListeners()

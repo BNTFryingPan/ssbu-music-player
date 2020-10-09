@@ -152,7 +152,6 @@ function startTwitchIntegration() {
         })
         bot.on("WHISPER", msg => {console.log(`[DM ${msg.displayName}]: ${msg.messageText}`)});
         bot.connect();
-        bot.connected = true;
         bot.join(twitchOauthData["channel_to_join"]);
         //bot.say(tch, "SSBU Music Player v0.1.2 Song Request bot is now in chat!")
     } else {

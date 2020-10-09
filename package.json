@@ -1,6 +1,6 @@
 {
     "name": "ssbu-music-player",
-    "version": "0.3.8",
+    "version": "0.3.9",
     "description": "A music player that looks like 'Sounds' in 'Vault' in SSBU",
     "main": "main.js",
     "publish": {

@@ -6,7 +6,7 @@ function getSongImage(song) {
             return `data:${picture.format};base64,${picture.data.toString('base64')}`;
         }
     }
-    return "./unknown.png"
+    return "./assets/unknown.png"
 }
 
 var calculatingGain = false;
@@ -248,7 +248,7 @@ async function loadSongsFromFolder(directory) {
             var thisSong = await getSongData(directory + "/" + files[f]);
             if (!(songs[thisSong[0]['album']])) {
                 songs[thisSong[0]['album']] = {
-                    "albumArt": "./unknown.png",
+                    "albumArt": "./assets/unknown.png",
                     "artists": [],
                     "songs": {},
                     "songFilePaths": [],
@@ -269,7 +269,7 @@ async function loadSongsFromFolder(directory) {
                 songs[thisSong[0]['album']]['artists'].push(thisSong[0]['albumartist']);
             }
 
-            if (songs[thisSong[0]['album']]['albumArt'] == './unknown.png' && thisSong[0]['picture']) {
+            if (songs[thisSong[0]['album']]['albumArt'] == './assets/unknown.png' && thisSong[0]['picture']) {
                 songs[thisSong[0]['album']]['albumArt'] = getSongImage(thisSong);
             }
         } else if (files[f] == ".ssbu-music") {

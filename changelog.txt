@@ -1,3 +1,8 @@
+v0.3.9
+Moved some files around internally to be more organized
+Changed the look of the scrollbar. Having a lot of songs in All Songs may make performace bad. oh well.
+changed some css to make it look a little bit better and scale a bit better when resizing the window.
+
 v0.3.8
 Added caching to the song list for each album. Check the readme if you have any issues with
     moving folders or songs around.
