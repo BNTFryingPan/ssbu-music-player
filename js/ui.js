@@ -2,6 +2,8 @@
 const mm = require('music-metadata');
 const util = require('util');
 const platFolders = require('platform-folders');
+const exec = require('child_process').exec
+const remote = require('electron').remote;
 
 var song = document.getElementById('song')
 
@@ -49,21 +51,30 @@ function setTopMenuVisible(visibile) {
         document.getElementById('album-list').style.display = "none";
         document.getElementById('song-list').style.display = "none";
         document.getElementById('back-button').style.display = "none";
+        document.getElementById("services").style.display = "none";
+        document.getElementById("no-songs-notice").style.display = "none"
     } else {
         document.getElementById('top-menu').style.display = "none";
         document.getElementById('now-playing').hidden = false;
         document.getElementById('back-button').style.display = "flex";
     }
+    setTimeout(updateScrollbar, 0);
 }
+
 
 function openMusicMenu() {
     setTopMenuVisible(false);
     document.getElementById('body').setAttribute('data-currentLayer', "album-list")
-    document.getElementById('album-list').style.display = "flex"
+    if (songs['All Songs']['songCount'] > 0) {
+        document.getElementById('album-list').style.display = "flex"
+    } else {
+        document.getElementById("no-songs-notice").style.display = "block"
+    }
     document.getElementById('list-container').style.display = "block"
     document.getElementById('normal').hidden = false;
     nowPlaying['currentPage'] = "Music Page"
     updateTitle("Vault > Sounds > Music")
+    setTimeout(updateScrollbar, 0);
 }
 
 function setSettingsOpenState(state) {
@@ -86,16 +97,22 @@ function openPlaylistMenu() {
     document.getElementById('normal').hidden = false;
     nowPlaying['currentPage'] = "Playlists"
     updateTitle("Vault > Sounds > Playlists")
+    setTimeout(updateScrollbar, 0);
 }
 
 function openServicesMenu() {
     setTopMenuVisible(false);
     document.getElementById('body').setAttribute('data-currentLayer', "services-menu")
-    document.getElementById('services').style.display = "block";
+    document.getElementById('services').style.display = "block"
+    document.getElementById('list-container').style.display = "block"
     document.getElementById('normal').hidden = false;
-    document.getElementById('list-container').style.display = "none"
-    nowPlaying['currentPage'] = "Services"
-    updateTitle("Vault > Sounds > Services")
+    nowPlaying['currentPage'] = "Playlists"
+    updateTitle("Vault > Sounds > Playlists")
+    setTimeout(updateScrollbar, 0);
+}
+
+function openFoldersFile() {
+    exec(platFolders.getMusicFolder() + "/folders.ssbu-music")
 }
 
 function toggleSongInfoModal(state) {
@@ -133,9 +150,6 @@ function updateNormalizationState(state) {
     }
 }
 
-const remote = require('electron').remote;
-const { ipcRenderer } = require('electron');
-
 function titlebar_min() {
     let win = remote.getCurrentWindow();
     win.minimize();
@@ -167,6 +181,7 @@ function titlebar_back() {
         document.getElementById('song-list').style.display = "none"
         document.getElementById('body').setAttribute('data-currentLayer', "album-list")
         nowPlaying['currentPage'] = "Music Page"
+        setTimeout(updateScrollbar, 0);
     } else {
         return;
     }
@@ -245,6 +260,7 @@ function handleWindowControls() {
     win.on('unmaximize', toggleMaxRestoreButtons);
 
     function toggleMaxRestoreButtons() {
+        setTimeout(updateScrollbar, 0);
         if (win.isMaximized()) {
             document.body.classList.add('maximized');
         } else {
@@ -258,11 +274,10 @@ function updateScrollbar() {
     let bar = document.getElementById("list-container-scrollbar")
     bar.value = list.scrollTop;
     bar.max = list.scrollHeight - list.clientHeight;
+    bar.hidden = (list.scrollHeight == list.clientHeight)
 }
 
-document.getElementById("list-container").onscroll = function(e) {
-    setTimeout(updateScrollbar, 0)
-}
+document.getElementById("list-container").addEventListener("scroll", updateScrollbar, {passive: true})
 
 document.getElementById("list-container-scrollbar").oninput = function(e) {
     let list = document.getElementById("list-container")

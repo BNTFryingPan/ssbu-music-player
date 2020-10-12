@@ -1,3 +1,42 @@
+v0.4.0
+Will now load from files defined in Music/folders.ssbu-music
+    Lines in that file that start with any of the following characters will be ignored: ['#', '//', '$', '!', '-']
+    Lines that start with "%" will tell it to recusively load songs in subfolders of that folder
+Moved some buttons around in settings to make it look a *little* better. I really need to work on that at some point though
+Changed the volume slider to be non-linear. The slider and output volume ranges from 0 to 1, and the slider volume it put 
+    into the equation x^3 before being given to the output. This allows finer control of volume at lower levels, but less
+    at higher levels, although it doesnt really matter because humans hear volume non-lineraly. google it if you care enough
+    i do want feedback on this though, so if you feel it should be adjusted, just make a github issue with want you want out
+    of the volume slider.
+Changed some layout things that should not be noticable, but should slightly improve performace (removed some spacer elements
+    that didnt actually do anything and removed some calcs in css to improve performance)
+Changed the minimum size of the window to 550px by 475px to help stop scaling issues at really small window sizes
+Also changed the default size of the window to 600px by 900px to also help with certain scaling issues at the default size
+Changed the look of the scrollbar and music control sliders a bit
+Made the music control buttons have images instead of text, and adjusted css of the buttons a bit too, and the pause button
+    now changes based on if the player is paused or not
+Added a message that displays if you have no music when you open the music menu telling you to either put music in the music
+    folder, or to add directories to look for music in.
+Music list caching now updates whenever you open an album in the background, and will reload the song list if there are any
+    changes
+Added global keybind listeners for media control buttons to stop music, pause/play music, skip track, and previous track.
+    might make the stop music button do something different, but for now ive got no ideas (not sure what the point of stop
+    is anyways lol)
+
+At some point i added rich presence assets for more albums i listen to. heres a full list:
+[
+    "A Hat in Time OST", "Celeste (Original Soundtrack)", "Celeste: Farewell (Original Soundtrack)", "UNDERTALE Soundtrack",
+    "Portal 2: Songs to Test By - Volume 1", "Portal 2: Songs to Test By - Volume 2", "Hexoscope OST", "Aperture Tag OST",
+    "Portal 2: Songs to Test By - Volume 3", "Portal 2: Songs to Test By", "Terraria Soundtrack Volume 1", "Astroneer",
+    "Terraria Soundtrack Volume 2", "Terraria Soundtrack Volume 3", "Keep Talking And Nobody Explodes - OST", "Portal",
+    "Astroneer (original game soundtrack) Volume 2", "Subnautica Original Soundtrack",  
+]
+If you want any that are not already here, please make a github issue and provide a list of names you want converted to
+    that album image (for example "Portal 2: Songs to Test By" and "Portal 2: Songs to Test By - Volume 1" have the same
+    album image), and either upload or link to an image that is at least 512x512 (1024x1024 recommended) and is in .png,
+    .jpg, or .jpeg format (that is what discord wants and needs for a rich presence asset). You can also look at
+    music-player.js for an up-to-date list, although it may be for an unreleased version.
+
 v0.3.9
 Moved some files around internally to be more organized
 Changed the look of the scrollbar. Having a lot of songs in All Songs may make performace bad. oh well.
@@ -14,7 +53,8 @@ Added updater, its not fully automatic
         if you click yes, it will download and then prompt you to restart the player, which will then install the update
         if you click no, nothing will happen
     if there is no update, it says there is no update available
-made version number show in title bar instead of settings screen and it pulls version number from package.json instead of hardcoded html
+made version number show in title bar instead of settings screen and it pulls version number from package.json instead of
+    hardcoded html
 
 v0.3.1 - v0.3.5
 literally just testing updater, so i skipped to 0.3.7 bc i can lol

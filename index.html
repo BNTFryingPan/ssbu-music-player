@@ -31,6 +31,14 @@
             }
         </script>
 
+    <script defer src="./js/playlists.js"></script>
+    <script defer src="./js/songs.js"></script>
+    <script defer src="./js/albums.js"></script>
+    <script defer src="./js/music-player.js"></script>
+    <script defer src="./js/folder-data.js"></script>
+    <script defer src="./js/ui.js"></script> 
+    <script defer src="./js/twitch.js"></script>
+
     </head>
     <body id="body" data-currentLevel="top-menu" data-prevLevel="top-menu" data-musicInfoOpen="false" data-settingsOpen="false">
         <div id='hidden-stuff' style='display: none'>
@@ -80,14 +88,19 @@
                         <td><input id="settings-acrylic" type="checkbox" checked></td>
                     </tr>
                     <tr>
-                        <td><input id='settings-refresh-albums' value="Refesh Album List" type="button" onclick="loadAlbums()"></td>
-                    </tr>
-                    <tr>
-                        <td><input id='settings-update' value="Check for updates" type="button"></td>
+                        <td>Enable System Notifications On Song Change (Disabled)</td>
+                        <td><input id="settings-notifs" type="checkbox" disabled></td>
                     </tr>
                     <tr title="When enabling again, will take effect when the next song starts playing">
-                        <td>Enable Volume Normalization</td>
-                        <td><input id="settings-normalization" type="checkbox" checked onclick="updateNormalizationState(this.checked)"></td>
+                        <td>Enable Volume Normalization (Temporarily Disabled)</td>
+                        <td><input id="settings-normalization" type="checkbox" disabled onclick="updateNormalizationState(this.checked)"></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input id='settings-refresh-albums' value="Refesh Album List" type="button" onclick="loadAlbums()">
+                            <input id='settings-update' value="Check for updates" type="button">
+                            <input value="Open Music Folder File" type="button" onclick="openFoldersFile()">
+                        </td>
                     </tr>
                     <tr>
                         <td>idk, more settings soon probably</td>
@@ -118,17 +131,28 @@
             </div>
 
             <div id="normal" hidden>
-                <div class="now-playing-spacer"></div>
+                <!--<div class="now-playing-spacer"></div>-->
                 
                 <div id="album-info-header">
                     <img id="album-info-header-img" class="album-logo" src='./assets/other-album.png' height="100%">
-                    <div id="album-info-header-thing"></div>
-                    <span id="album-info-header-thing-text">asdf</span>
+                    <div id="album-info-header-thing"><span id="album-info-header-thing-text">asdf</span></div>
                 </div>
                 
-                <div id="services" style="display:none">
+                <div id='list-container'>
+                    <input id="list-container-scrollbar" type="range" step="1">
                     <div class="list-spacer"></div>
-                    <div id="s-content">
+                    <div id="song-list" style="display: none">
+                        <table id='song-list-t'>
+                            <tbody id='song-list-tbody'>
+                                <tr><td></td><td>0</td><td>Example Song</td><td>0:00</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id='album-list' style="display: none"></div>
+                    <div id="playlist-list" style="display: none"></div>
+                    <div id='no-songs-notice' style="display: none"><span>Hey! We couldn't find any of your music! Make sure your music is in your user Music folder, or <a onclick="openFoldersFile()">click here to open the music folder file</a> to add music directories that we should check in.</span></div>
+                    
+                    <div id="services" style="display: none">
                         <div id="s-yt-test-area">
                             <div id="player"></div>
                             <!--<script>
@@ -205,21 +229,6 @@
                         </div>
                     </div>
                 </div>
-
-
-                <div id='list-container'>
-                    <input id="list-container-scrollbar" type="range" step="1">
-                    <div class="list-spacer"></div>
-                    <div id="song-list" style="display: none">
-                        <table id='song-list-t'>
-                            <tbody id='song-list-tbody'>
-                                <tr><td></td><td>0</td><td>Example Song</td><td>0:00</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div id='album-list' style="display: none"></div>
-                    <div id="playlist-list" style="display: none"></div>
-                </div>
             </div>
 
 
@@ -244,14 +253,14 @@
                 </div>
                 <div id='song-controls'>
                     <div id='song-sliders'>
-                        <input type="range" step="0.000001" value=1 max=1 min=0 id="now-playing-volume-slider" oninput="updateVolume()" class="seek-slider">
+                        <input type="range" step="0.000001" value=1 max=1 min=0 id="now-playing-volume-slider" oninput="updateVolume()" class="seek-slider"><br>
                         <input type="range" step="0.000001" id="now-playing-seek-slider" oninput="updateSongProgressFromBar()" class="song-progress seek-slider">
                     </div>
                     <div id='song-buttons'>
-                        <input type="button" id="np-prev"    value="prev"    onclick="prevSong()">
-                        <input type="button" id="np-pause"   value="pause"   onclick="pauseSong()"> 
-                        <input type="button" id="np=next"    value="next"    onclick="nextSong()">
-                        <input type="button" id="np-shuffle" value="shuffle" onclick="shuffleSongs()">
+                        <button id="np-prev"    onclick="prevSong()"><img src="./assets/skip.png" style='transform: scaleX(-1);'></button>
+                        <button id="np-pause"   onclick="pauseSong()"><img id="np-pause-img" src="./assets/play.png"></button>
+                        <button id="np=next"    onclick="nextSong()"><img src="./assets/skip.png"></button>
+                        <button id="np-shuffle" onclick="shuffleSongs()"><img src="./assets/unknown.png"></button>
                     </div>
                     <div id='shuffle-state'>Random</div>
                 </div>
@@ -267,12 +276,5 @@
             require('./renderer.js');
             //normalizedAudioElement("song");
         </script>
-        <script src="./js/playlists.js"></script>
-        <script src="./js/songs.js"></script>
-        <script src="./js/albums.js"></script>
-        <script src="./js/music-player.js"></script>
-        <script src="./js/folder-data.js"></script>
-        <script src="./js/ui.js"></script> 
-        <script src="./js/twitch.js"></script>
     </body>
 </html>

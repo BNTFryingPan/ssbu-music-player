@@ -1,5 +1,5 @@
 // Modules to control application life and create native browser window
-const {app, BrowserWindow, ipcMain, systemPreferences, dialog} = require('electron');
+const {app, BrowserWindow, ipcMain, systemPreferences, dialog, globalShortcut} = require('electron');
 const path = require('path');
 const platfolders = require('platform-folders');
 const ewc = require('@svensken/ewc');
@@ -16,10 +16,10 @@ function createWindow () {
     // Create the browser window.
 
     mainWindow = new BrowserWindow({
-        width: 800,
+        width: 900,
         height: 600,
-        minWidth: 500, 
-        minHeight: 400,
+        minWidth: 550, 
+        minHeight: 475,
         //transparent: true,
         //backgroundColor: '#fff',
         webPreferences: {
@@ -34,7 +34,6 @@ function createWindow () {
 
     // and load the index.html of the app.
     mainWindow.loadFile('index.html')
-    //mainWindow.loadURL("https://www.whatsmybrowser.org/")
 
     // Open the DevTools.
     // mainWindow.webContents.openDevTools()
@@ -45,8 +44,22 @@ function createWindow () {
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
         mainWindow = null
-    })
+    });
+
+    globalShortcut.register("MediaPlayPause",     keybind_pauseplay);
+    globalShortcut.register("MediaStop",          keybind_stop);
+    globalShortcut.register("MediaNextTrack",     keybind_next);
+    globalShortcut.register("MediaPreviousTrack", keybind_prev);
 }
+
+function keybind_pauseplay() { mainWindow.webContents.send("updateState", "playpause");console.log("playpause"); };
+function keybind_stop()      { mainWindow.webContents.send("updateState", "stop");console.log("stop"); };
+function keybind_prev()      { mainWindow.webContents.send("updateState", "prev");console.log("prev"); };
+function keybind_next()      { mainWindow.webContents.send("updateState", "next");console.log("next"); };
+
+app.on("will-quit", () => {
+    globalShortcut.unregisterAll();
+})
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.

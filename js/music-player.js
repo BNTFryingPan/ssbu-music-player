@@ -5,6 +5,7 @@ var songs = {
         "type": "album",
         "artists": [],
         "duration": 0,
+        "songCount": 0,
         "songs": {},
         "songFilePaths": []
     },
@@ -14,6 +15,7 @@ var songs = {
         "type": "album",
         "artists": [], // this would have all songData['albumartist']'s in it,
         "duration": 0,
+        "songCount": 0,
         "songs": {},
         "songFilePaths": []
     }
@@ -36,14 +38,14 @@ var nowPlaying = {
     "currentSource": null,
     "shuffleSource": songs['All Songs'],
     "shuffleMode": "shuffleall", // shuffleall, loop, order, shufflealbum
-    "userVolumeSliderValue": 1,
     "rawNormalizationGain": 1,
     "startTime": Date.now()
 };
 
 var userSettings = {
     "normalizeVolume": true,
-    "currentPage": "none"
+    "currentPage": "none",
+    "userVolumeSliderValue": 1,
 }
 
 const artAssetKeyDict = {
@@ -77,6 +79,15 @@ source-spotify - spotify source image
 source-other - other source image
 */
 
+document.addEventListener('readystatechange', (e) =>{
+    ipcRenderer.on("updateState", (ev, message) => {
+        if      (message === "next") { nextSong(); }
+        else if (message === "prev") { prevSong(false); }
+        else if (message === "stop") { pauseSong(false); }
+        else if (message === "playpause") { pauseSong(); }
+    });
+})
+
 function getDiscordArtAssetKeyFromAlbumName(name) {
     if (artAssetKeyDict[name]) {
         return artAssetKeyDict[name]
@@ -86,6 +97,7 @@ function getDiscordArtAssetKeyFromAlbumName(name) {
 }
 
 const DiscordRPC = require("discord-rpc");
+const { ipcRenderer } = require("electron");
 const clientID = "659092610400387093";
 //DiscordRPC.register(clientID);
 const rpc = new DiscordRPC.Client({ transport: 'ipc' });
@@ -118,7 +130,6 @@ rpc.on('ready', () => {
     //setInterval(() => {updateRPC()}, 15e3);
 })
 
-//debugger
 rpc.login({ clientId: clientID }).catch(console.error);
 
 function randomSong(source=null) {
@@ -210,12 +221,12 @@ function nextSong() {
     
 }
 
-function prevSong() {
+function prevSong(notif) {
     if (document.getElementById('song').currentTime <= 3) {
         document.getElementById('song').currentTime = 0;
         nowPlaying['startTime'] = Date.now();
         updateRPC();
-        alert('wip');
+        if (!!notif) alert('wip');
     } else {
         document.getElementById('song').currentTime = 0;
         nowPlaying['startTime'] = Date.now();
@@ -240,10 +251,13 @@ function shuffleSongs() {
 var isChangingSong = false;
 
 function updateVolume() {
-    nowPlaying['userVolumeSliderValue'] = document.getElementById('now-playing-volume-slider').value;
+    userSettings['userVolumeSliderValue'] = document.getElementById('now-playing-volume-slider').value;
     //gainNode.gain.value = nowPlaying['rawNormalizationGain'] * nowPlaying['userVolumeSliderValue'];//, audioCtx.currentTime);
     //gainNode.gain.value = 0;
 }
+
+const playButtonImage = "./assets/play.png";
+const pauseButtonImage = "./assets/pause.png";
 
 function songTick() {
     var song = document.getElementById('song')
@@ -256,13 +270,19 @@ function songTick() {
         isChangingSong = false;
     }
 
-    //TODO: add seek slider, and update it here
-    document.getElementById('now-playing-seek-slider').value = song.currentTime;
-    song.volume = nowPlaying['userVolumeSliderValue']
-    /*if (!calculatingGain) {
-        document.getElementById("song-info-normalization").innerHTML = gainNode.gain.value + " = " + nowPlaying['rawNormalizationGain'] + "x" + nowPlaying['userVolumeSliderValue'];
+    
+    if (song.paused) {
+        document.getElementById('np-pause-img').src = playButtonImage;
     } else {
-        document.getElementById("song-info-normalization").innerHTML = gainNode.gain.value + " = " + nowPlaying['rawNormalizationGain'] + "x" + nowPlaying['userVolumeSliderValue'] + " (Recalculating...)"
+        document.getElementById('np-pause-img').src = pauseButtonImage;
+    }
+
+    document.getElementById('now-playing-seek-slider').value = song.currentTime;
+    song.volume = (userSettings['userVolumeSliderValue'])**3
+    /*if (!calculatingGain) {
+        document.getElementById("song-info-normalization").innerHTML = gainNode.gain.value + " = " + nowPlaying['rawNormalizationGain'] + "x" + userSettings['userVolumeSliderValue'];
+    } else {
+        document.getElementById("song-info-normalization").innerHTML = gainNode.gain.value + " = " + nowPlaying['rawNormalizationGain'] + "x" + userSettings['userVolumeSliderValue'] + " (Recalculating...)"
     }*/
 }
 
@@ -277,4 +297,4 @@ if (elec.remote.app.isPackaged) {
 }
 window.setInterval(function(){
     songTick();
-}, 25)
+}, 25);

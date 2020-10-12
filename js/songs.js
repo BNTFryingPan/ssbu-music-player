@@ -28,7 +28,7 @@ async function playSongFromFile(file) {
         calculatingGain = true;
         document.getElementById("song-info-normalization").innerHTML = gainNode.gain.value + " (Recalculating...)";
         if (songs[songData[0]["album"]]['songs'][file][1]['normalization']) {
-            gainNode.gain.value = (songs[songData[0]["album"]]['songs'][file][1]['normalization'] * nowPlaying['userVolumeSliderValue']);
+            gainNode.gain.value = (songs[songData[0]["album"]]['songs'][file][1]['normalization'] * userSettings['userVolumeSliderValue']);
             document.getElementById("song-info-normalization").innerHTML = gainNode.gain.value;
             //console.log("reused gain value: " + songs[songData[0]["album"]]['songs'][file][1]['normalization'])
 
@@ -61,10 +61,10 @@ async function playSongFromFile(file) {
                     // too different from other websites
                     gain = gain / 10.0;
                     nowPlaying['rawNormalizationGain'] = gain
-                    //gainNode.gain.setValueAtTime(gain * nowPlaying['userVolumeSliderValue'], audioCtx.currentTime);
+                    //gainNode.gain.setValueAtTime(gain * userSettings['userVolumeSliderValue'], audioCtx.currentTime);
                     
-                    gainNode.gain.value = (gain * nowPlaying['userVolumeSliderValue']);
-                    document.getElementById("song-info-normalization").innerHTML = gainNode.gain.value + " = " + gain + "x" + nowPlaying['userVolumeSliderValue'];
+                    gainNode.gain.value = (gain * userSettings['userVolumeSliderValue']);
+                    document.getElementById("song-info-normalization").innerHTML = gainNode.gain.value + " = " + gain + "x" + userSettings['userVolumeSliderValue'];
                     songs[songData[0]["album"]]['songs'][file][1]['normalization'] = gain;
                 }
             );
@@ -232,12 +232,13 @@ async function getSongData(fileName) {
     return [songData, metaData];
 }
 
-async function loadSongsFromFolder(directory) {
+async function loadSongsFromFolder(directory, recursive) {
+    recursive = recursive || true;
     directory = directory.replace(/\\/g, "/");
     var files = fs.readdirSync(directory)
     //console.log(files)
     for (var f in files) {
-        if (files[f].split('.').length == 1) {
+        if (files[f].split('.').length == 1 && recursive) {
             try {
                 loadSongsFromFolder(directory + "/" + files[f])
             } catch (error) {
@@ -252,18 +253,20 @@ async function loadSongsFromFolder(directory) {
                     "artists": [],
                     "songs": {},
                     "songFilePaths": [],
-                    "duration": 0
+                    "duration": 0,
+                    "songCount": 0,
                 }
             }
 
             songs[thisSong[0]['album']]['songs'][directory + "/" + files[f]] = thisSong
+                     songs["All Songs"]['songs'][directory + "/" + files[f]] = thisSong
             songs[thisSong[0]['album']]['songFilePaths'].push(directory + "/" + files[f])
+                     songs["All Songs"]['songFilePaths'].push(directory + "/" + files[f])
             songs[thisSong[0]['album']]["duration"] += thisSong[1]['duration']
-            songs["All Songs"]['songs'][directory + "/" + files[f]] = thisSong
-            songs["All Songs"]['duration'] += thisSong[1]['duration']
-            songs["All Songs"]['songFilePaths'].push(directory + "/" + files[f])
-
-
+                     songs["All Songs"]['duration'] += thisSong[1]['duration']
+            songs[thisSong[0]['album']]["songCount"]++;
+                     songs["All Songs"]['songCount']++;
+            
             // if the songs 'albumartist' isnt in the albums artist list, add them
             if (!songs[thisSong[0]['album']]['artists'].includes(thisSong[0]['albumartist'])) {
                 songs[thisSong[0]['album']]['artists'].push(thisSong[0]['albumartist']);
@@ -272,18 +275,39 @@ async function loadSongsFromFolder(directory) {
             if (songs[thisSong[0]['album']]['albumArt'] == './assets/unknown.png' && thisSong[0]['picture']) {
                 songs[thisSong[0]['album']]['albumArt'] = getSongImage(thisSong);
             }
-        } else if (files[f] == ".ssbu-music") {
+        } //else if (files[f] == ".ssbu-music") {
             //parseFolderDataFile(files[f])
-        }
+        //}
     }
     return true;
     //hasLoadedSongs = true;
 }
 
+function skipFolder(path) {
+    let symbols = ['!', '#', '//', '-', '$']
+    for (sym in symbols) {
+        if (path.startsWith(symbols[sym])) {
+            return true
+        }
+    }
+    return false
+}
+
 async function loadSongsFromMusicFolder() {
-    var a = await loadSongsFromFolder(platFolders.getMusicFolder());
-    //console.log(a)
-    var b = await loadAlbums()
-    //console.log(b)
-    //await loadSongsFromFolder(platFolders.getMusicFolder()).then(loadAlbums())
+    await loadSongsFromFolder(platFolders.getMusicFolder());
+    await loadAlbums();
+    //await loadSongsFromFolder(platFolders.getMusicFolder()).then(loadAlbums());
+    if (fs.existsSync(platFolders.getMusicFolder() + "/folders.ssbu-music")) {
+        let file = fs.readFileSync(platFolders.getMusicFolder() + "/folders.ssbu-music", {encoding: "utf-8"})
+        let folders = file.split("\r\n")
+        for (f in folders) {
+            if (fs.existsSync(folders[f]) && !skipFolder(folders[f])) {
+                if (folders[f].startsWith("%")) {
+                    await loadSongsFromFolder(folders[f].split("%",2)[1], true);
+                } else {
+                    await loadSongsFromFolder(folders[f], false);
+                }
+            }
+        }
+    }
 }

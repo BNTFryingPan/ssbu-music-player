@@ -34,6 +34,8 @@ function parseFolderData(dir) {
 }
 
 function saveAlbumHtmlToFile(path, album, html) {
+    console.log(path + ", " + album)
+    if (album == "All Songs" || album == "Other") path = platFolders.getMusicFolder();
     let f = parseFolderDataFile(path + "/" + getDataFileName());
     if (!f['albums'][album]) {
         f['albums'][album] = {"songs":{},"html":""}
@@ -43,7 +45,7 @@ function saveAlbumHtmlToFile(path, album, html) {
 }
 
 function loadAlbumHtmlFromFile(path, album) {
-    if (album == "All Songs" || album == "Other") return false; // i dont want to store all songs or other yet, i will do it later, but i need to find a place to put them
+    if (album == "All Songs" || album == "Other") path = platFolders.getMusicFolder();
     let f = parseFolderDataFile(path + "/" + getDataFileName());
     if (!f['albums'][album]) {
         return false
