@@ -1,10 +1,12 @@
 // Modules to control application life and create native browser window
-const {app, BrowserWindow, ipcMain, systemPreferences, dialog, globalShortcut} = require('electron');
+const {app, ipcMain, systemPreferences, dialog, globalShortcut} = require('electron');
 const path = require('path');
 const platfolders = require('platform-folders');
-const ewc = require('@svensken/ewc');
+//const ewc = require('@svensken/ewc');
+const { BrowserWindow } = require("electron-acrylic-window");
 const { autoUpdater } = require("electron-updater");
 const { checkForUpdates } = require("./updater")
+const os = require("os");
 
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -12,8 +14,25 @@ const { checkForUpdates } = require("./updater")
 let mainWindow;
 //let popupWindow;
 
+function isWindows10() {
+    if (process.platform !== 'win32') return false;
+    return os.release().split('.')[0] === '10';
+}
+
+function getVibrancySettings() {
+    if (isWindows10()) return {
+        theme: '#22222222',
+        effect: 'acrylic',
+        useCustomWindowRefreshMethod: true,
+        disableOnBlur: true,
+        debug: true
+    };
+    else return 'dark';
+}
+
 function createWindow () {
     // Create the browser window.
+    
 
     mainWindow = new BrowserWindow({
         width: 900,
@@ -27,10 +46,11 @@ function createWindow () {
             nodeIntegration: true,
             //webSecurity: false
         },
-        backgroundColor: '#44444444',
+        //backgroundColor: '#44444444',
+        vibrancy: getVibrancySettings(),
         frame: false
     })
-    ewc.setAcrylic(mainWindow, 0x14800020);
+    //ewc.setAcrylic(mainWindow, 0x14800020);
 
     // and load the index.html of the app.
     mainWindow.loadFile('index.html')
@@ -81,13 +101,15 @@ app.on('activate', function () {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
-ipcMain.on('acrylic', (_) => {
-    //console.log('enable')
-    ewc.setAcrylic(mainWindow, 0x14800020);
+ipcMain.on('acrylic-enable', (_) => {
+    mainWindow.setVibrancy(getVibrancySettings())
+});
+
+ipcMain.on('acrylic-disable', (_) => {
+    mainWindow.setVibrancy(null)
 });
 
 ipcMain.on("updateCheck", function() {
-    console.log("updatecheck");
     checkForUpdates()
 })
 
@@ -102,7 +124,3 @@ ipcMain.on('trGradient', (_) => {
     ewc.setTransparentGradient(mainWindow, 0x14800020);
 });
 */
-ipcMain.on('disable', (_) => {
-    //console.log("disable")
-    ewc.disable(mainWindow, 0x14800020);
-});

@@ -33,8 +33,8 @@ function parseFolderData(dir) {
     return parseFolderDataFile(folderFile);
 }
 
-function saveAlbumHtmlToFile(path, album, html) {
-    console.log(path + ", " + album)
+/*function saveAlbumHtmlToFile(path, album, html) {
+    //console.log(path + ", " + album)
     if (album == "All Songs" || album == "Other") path = platFolders.getMusicFolder();
     let f = parseFolderDataFile(path + "/" + getDataFileName());
     if (!f['albums'][album]) {
@@ -52,7 +52,7 @@ function loadAlbumHtmlFromFile(path, album) {
     } else {
         return f['albums'][album]['html']
     }
-}
+}*/
 
 function parseFolderDataFile(path) {
     if (fs.existsSync(path)) {
@@ -67,4 +67,21 @@ function parseFolderDataFile(path) {
 
 function saveFolderDataFile(path, data) {
     fs.writeFileSync(path + "/" + getDataFileName(), JSON.stringify(data))
+}
+
+function readSettingsFile() {
+    if (fs.existsSync(platFolders.getMusicFolder() + "/settings.ssbu-music")) {
+        return JSON.parse(fs.readFileSync(platFolders.getMusicFolder() + "/settings.ssbu-music"))
+    } else {
+        fs.writeFileSync(platFolders.getMusicFolder() + "/settings.ssbu-music", JSON.stringify(userSettings))
+        return userSettings
+    }
+}
+
+function saveSettingsFile() {
+    fs.writeFileSync(platFolders.getMusicFolder() + "/settings.ssbu-music", JSON.stringify(userSettings))
+}
+
+function loadSettings() {
+    userSettings = readSettingsFile()
 }

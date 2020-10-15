@@ -36,16 +36,44 @@ var nowPlaying = {
     "youtube-queue": [],
     "currentPlaylist": null,
     "currentSource": null,
-    "shuffleSource": songs['All Songs'],
+    "shuffleSource": {type:"album",name:"All Songs"},
     "shuffleMode": "shuffleall", // shuffleall, loop, order, shufflealbum
     "rawNormalizationGain": 1,
-    "startTime": Date.now()
+    "startTime": Date.now(),
+    "currentPage": "none",
+    "isDevelopmentBuild": false,
 };
 
+function updateCurrentShuffleSource(newSource) {
+    if (newSource.type == "album") {
+        if (songs[newSource.name]) {
+            nowPlaying['shuffleSource'] = newSource;
+        }
+    } else if (newSource.type == "playlist") {
+        if (playlists[newSource.name]) {
+            nowPlaying['shuffleSource'] = newSource;
+        }
+    }
+}
+
+function getCurrentShuffleSource() {
+    let newSource = nowPlaying['shuffleSource']
+    if (newSource.type == "album") {
+        if (songs[newSource.name]) {
+            return songs[newSource.name]
+        }
+    } else if (newSource.type == "playlist") {
+        if (playlists[newSource.name]) {
+            return playlists[newSource.name]
+        }
+    }
+}
+
 var userSettings = {
-    "normalizeVolume": true,
-    "currentPage": "none",
+    "normalizeVolume": false,
+    "windowsAcrylicState": true,
     "userVolumeSliderValue": 1,
+    "enableDeveloperMode": false,
 }
 
 const artAssetKeyDict = {
@@ -79,6 +107,8 @@ source-spotify - spotify source image
 source-other - other source image
 */
 
+log = require('electron-log')
+
 document.addEventListener('readystatechange', (e) =>{
     ipcRenderer.on("updateState", (ev, message) => {
         if      (message === "next") { nextSong(); }
@@ -101,25 +131,28 @@ const { ipcRenderer } = require("electron");
 const clientID = "659092610400387093";
 //DiscordRPC.register(clientID);
 const rpc = new DiscordRPC.Client({ transport: 'ipc' });
-//▶️ 🔂 ⏸️ 🔀
+// ▶️ 🔂 ⏸️ 🔀
+// 🔊 🔉 🔇 🔈 🎶 🎵 💿 🎧 🎤
 
 async function updateRPC() {
     if (nowPlaying['song']['data'] == null) {
-        rpc.setActivity({details: "Idle ⏹️", state: userSettings['currentPage']});
+        rpc.setActivity({details: "Idle ⏹️", state: nowPlaying['currentPage']});
     } else {
-        details = nowPlaying['song']['data'][0]['title'] + " ";
+        let details = nowPlaying['song']['data'][0]['title'] + " ";
         if (nowPlaying['playbackState'] == "Playing") details += "▶️";
         else if (nowPlaying['playbackState'] == "Paused") details += "⏸️";
         else if (nowPlaying['playbackState'] == "Idle") details += "⏹️";
         if (nowPlaying['shuffleMode'] == 'loop') details += "🔂 " + nowPlaying["loopCount"];
-        else if (nowPlaying['shuffleMode'] == 'random all') details += "🔀";
+        else if (nowPlaying['shuffleMode'] == 'shuffleall') details += "🔀";
+        else if (nowPlaying['shuffleMode'] == 'shufflealbum') details += "🔀";
+        else if (nowPlaying['shuffleMode'] == 'order') details += "🔀";
         rpc.setActivity({
             details: details,
             state: nowPlaying['song']['data'][0]['album'] + " - " + nowPlaying['song']['data'][0]['track']['no'] + "/" + nowPlaying['song']['data'][0]['track']['of'],
             startTimestamp: nowPlaying['startTime'],
             largeImageKey: getDiscordArtAssetKeyFromAlbumName(nowPlaying['song']['data'][0]['album']),
             largeImageText: nowPlaying['song']['data'][0]['artist'],
-            smallImageText: nowPlaying['playbackState'],
+            smallImageText: nowPlaying['playbackState'] + " | v" + document.getElementById('version-display').innerHTML,
             smallImageKey: "unknown-album-image",
         });
     }
@@ -144,7 +177,6 @@ function randomSong(source=null) {
             //TODO: add playlists
         }
     }
-    //console.log(songsToPickFrom)
     var randomSongIndex = parseInt(Math.random() * source['songFilePaths'].length);
     return {"data": source['songs'][source['songFilePaths'][randomSongIndex]], "index": randomSongIndex, "file": source['songFilePaths'][randomSongIndex]};
 }
@@ -159,21 +191,17 @@ function pauseSong(state) {
         if (state) {
             document.getElementById('song').pause()
             nowPlaying['playbackState'] = "Paused"
-            //console.log('pause a')
         } else {
             document.getElementById('song').play()
             nowPlaying['playbackState'] = "Playing"
-            //console.log('play a')
         }
     } else {
         if (document.getElementById('song').paused) {
             document.getElementById('song').play()
             nowPlaying['playbackState'] = "Playing"
-            //console.log('pause')
         } else {
             document.getElementById('song').pause()
             nowPlaying['playbackState'] = "Paused"
-            //console.log('play')
         }
     }
     updateRPC()
@@ -192,7 +220,7 @@ function nextSong() {
         playSongFromFile(next['file'])
         sendNewSongPlayingMessage(next)
         nowPlaying['loopCount'] = 0;
-    } else if (nowPlaying['shuffleMode'] == "shufflealbum") {
+    } else if (nowPlaying['shuffleMode'] == "shufflesource") {
         let next = randomSong(songs[nowPlaying['song']['data'][0]['album']])
         playSongFromFile(next['file'])
         sendNewSongPlayingMessage(next)
@@ -252,6 +280,7 @@ var isChangingSong = false;
 
 function updateVolume() {
     userSettings['userVolumeSliderValue'] = document.getElementById('now-playing-volume-slider').value;
+    saveSettingsFile();
     //gainNode.gain.value = nowPlaying['rawNormalizationGain'] * nowPlaying['userVolumeSliderValue'];//, audioCtx.currentTime);
     //gainNode.gain.value = 0;
 }
@@ -290,10 +319,11 @@ function songTick() {
 
 var elec = require('electron');
 if (elec.remote.app.isPackaged) {
-    document.getElementById("version-display").innerHTML = elec.remote.app.getVersion() + " ";
+    document.getElementById("version-display").innerHTML = elec.remote.app.getVersion();
     console.log("Production Build");
 } else {
-    document.getElementById("version-display").innerHTML = require("./package.json").version + " "
+    document.getElementById("version-display").innerHTML = require("./package.json").version + " - Development Build"
+    nowPlaying['isDevelopmentBuild'] = true;
 }
 window.setInterval(function(){
     songTick();

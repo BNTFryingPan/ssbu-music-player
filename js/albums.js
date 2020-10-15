@@ -1,5 +1,4 @@
 async function openAlbum(albumName) {
-    console.log(nowPlaying['openedAlbum'])
     var path = "null";
     for (song in songs[albumName]['songs']) {
         path = songs[albumName]['songs'][song][0]['folder']
@@ -16,21 +15,15 @@ async function openAlbum(albumName) {
     }
     
     if (nowPlaying['openedAlbum'] != albumName) {
-        let attemptedLoad = loadAlbumHtmlFromFile(path, albumName);
-        if (attemptedLoad != false) {
-            document.getElementById('song-list-tbody').innerHTML = attemptedLoad;
-            hideAlbumLayer()
-        }
         let updatedHTML = "";
         for (song in songs[albumName]["songs"]) {
             updatedHTML += await createSongListEntryFromSongData(songs[albumName]['songs'][song][0]['fileLocation']);
         }
-        saveAlbumHtmlToFile(path, albumName, updatedHTML)
 
-        if (attemptedLoad === false) {
-            document.getElementById('song-list-tbody').innerHTML = updatedHTML;
-            hideAlbumLayer()
-        }
+        document.getElementById('song-list-tbody').innerHTML = updatedHTML;
+        hideAlbumLayer()
+    } else {
+        hideAlbumLayer()
     }
     
 
@@ -43,7 +36,6 @@ async function openAlbum(albumName) {
 async function loadAlbums() {
     var albList = document.getElementById('album-list');
     albList.innerHTML = ""
-    //console.log(JSON.stringify(songs))
     for (var alb in songs) {
         if (songs[alb]["extraText"]) {
             var extraText = songs[alb]["extraText"]
@@ -52,10 +44,12 @@ async function loadAlbums() {
             var extraText = ""
             var classes = "album select-hover-anim hide-text"
         }
-        //console.log(alb)
-        //console.log("<div class='album select-hover-anim' style='background-image:" + songs[alb]['albumArt'] + "></div>");
-        albList.innerHTML += "<button type='button' value='" + extraText + "' class='" + classes + "' onclick='openAlbum(\"" + alb + "\")' style='background-image:url(" + songs[alb]['albumArt'] + ")'>" + extraText + "</button>";
-        //console.log(albList.innerHTML);
+        albList.innerHTML += "<button type='button' id='album-list-album-" + alb.toLowerCase() + "' value='" + extraText + "' class='" + classes + "' onclick='openAlbum(\"" + alb + "\")' style='background-image:url(" + songs[alb]['albumArt'] + ")'>" + extraText + "</button>";
+    }
+    if (songs['Other']['songCount'] === 0) {
+        document.getElementById("album-list-album-other").style.display = "none";
+    } else {
+        document.getElementById("album-list-album-other").style.display = "block";
     }
     return true;
 }

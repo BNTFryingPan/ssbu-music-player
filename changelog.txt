@@ -1,3 +1,31 @@
+v0.4.1
+Other album will no longer show up if it has no songs.
+Adjusted scrollbar css a bit because i still havent finalized any of the design elements yet pretty much and its all under 
+    active development
+Now saves settings (windows 10 acrylic, and volume slider position)
+Added support for .ogg files
+Fixed trying to open the album you just opened would not do anything.
+Adjusted how the sliders look, and added labels to the sliders
+Adjusted RPC to show version and if the music player is running in dev mode
+Adjusted how the title bar version is shown when in a dev build
+Removed the song list caching feature for now as it very much caused problems if you moved songs around, but i still fixed
+    the issue it was fixing by re-using the parsed metadata that was loaded for all songs when the player starts
+Got some progress on playlists done, however they are still unusable for end-users at this time.
+    Added a button to add a song to a playlist (doesnt work yet)
+    Made playlists actually load and function.
+        By function, i mean it can open a playlist similar to how it opens an album, and it can play songs if any are added
+        It does not load playlists from anywhere currently
+    Playlists will be fully functional for local files by v0.5 (could be sooner)
+Optimized a few things
+    internal function getSongData() will attept to get song data from the All Songs album instead of reading file from disk
+        fixes the issue that caching the song list "fixed" but better, as this will also help in other places too.
+        this also causes less reads and writes on the disk so if you have a hard drive and not an ssd, it should be much
+            faster
+    made some variables that were not supposed to be global not global anymore because memory usage and possible interference
+    Switched to electron-acrylic-window instead of ewc for the acrylic effect. This enables compatability for Vibrancy on OSX
+        This might also improve performance on windows, but i dont know if it does or not
+Started working on a context menu when you right click songs. Does not work yet though, so its hidden
+
 v0.4.0
 Will now load from files defined in Music/folders.ssbu-music
     Lines in that file that start with any of the following characters will be ignored: ['#', '//', '$', '!', '-']

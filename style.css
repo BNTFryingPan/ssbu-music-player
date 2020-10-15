@@ -16,6 +16,9 @@ html {box-sizing: border-box;}
 *, *:before, *:after {box-sizing: inherit;}
 html, body {height: 100%; margin: 0;}
 
+#context-menu {
+    position: absolute;
+}
 
 body {
     font-family: "Segoe UI", sans-serif;
@@ -92,7 +95,7 @@ p {
     flex-wrap: wrap;
 }
 
-#album-list, #song-list, #playlist-list, #no-songs-notice {
+#album-list, #song-list, #playlist-list, #no-songs-notice, #pl-song-list {
     background-color: #000000cc;
     z-index: 0;
     padding: 10px;
@@ -163,16 +166,16 @@ p {
     transform: rotate(90deg);
     transform-origin: top right;
     height: 8px;
-    width: calc(100vh - 10em - 32px + 6px);
+    width: calc(90vh - 10em - 32px + 6px);
     padding: 0;
     margin: 0;
     background: #1C47F6;
     outline: none;
     z-index: 0;
     position: fixed;
-    bottom: -4px;
-    right: 5px;
-    border-radius: 0;
+    bottom: 3vh;
+    right: 1vh;
+    border-radius: 4px;
 }
 
 #list-container-scrollbar::-webkit-slider-thumb {
@@ -251,6 +254,7 @@ p {
     align-items: center;
     position: absolute;
     bottom: 1.5em;
+    
 }
 
 #song-sliders {
@@ -258,6 +262,14 @@ p {
     bottom: calc(50px + 2em);
     left: 5%;
     width: 90%;
+    height: 3em;
+}
+
+#song-sliders > span {
+    position: absolute;
+    opacity: 0.5;
+    z-index: 0;
+    pointer-events: none;
 }
 
 #song-sliders > input {
@@ -314,7 +326,11 @@ p {
     margin-top: 6px;
     margin-bottom: 6px;
     border-radius: 10px;
-    z-index: 0;
+    z-index: 1;
+}
+
+#now-playing-seek-slider::-webkit-slider-thumb {
+    opacity: 0.3;
 }
 
 .seek-slider::-webkit-slider-thumb {
@@ -325,11 +341,11 @@ p {
     border-radius: 50%;
     background: #40d0e0;
     cursor: grab;
-    opacity: 0;
+    opacity: 0.1;
 }
 
 .seek-slider:hover::-webkit-slider-thumb {
-    opacity: 0.8
+    opacity: 0.8 !important;
 }
 
 .seek-slider::-webkit-slider-thumb:active {
@@ -337,12 +353,14 @@ p {
 }
 
 .seek-slider::-webkit-slider-thumb:hover {
-    opacity: 1;
+    opacity: 1 !important;
 }
 
 #song-info {
     position: absolute;
     background-color: rgba(0,0,0,0.5);
+    overflow-y: visible;
+    overflow-x: hidden;
     top: 40%;
     width: 100%;
     height: 30%;
@@ -454,30 +472,30 @@ p {
     width: 100%;
 }
 
-#song-list-t {
+.song-list-t {
     width: 100%;
     text-align: left;
     padding: 0;
 }
 
-#song-list-t > tbody {
+.song-list-t > tbody {
     padding: 0;
 }
 
-#song-list-t > tbody > tr, #song-list-t > tbody > tr > td {
+.song-list-t > tbody > tr, #song-list-t > tbody > tr > td {
     padding: 3px;
     margin: 0px;
 }
 
-#song-list-t > tbody > tr {
+.song-list-t > tbody > tr {
     width: 100%;
 }
 
-#song-list-t > tbody > tr:hover > td {
+.song-list-t > tbody > tr:hover > td {
     color: #1C47F6;
 }
 
-/*#song-list-tbody > tr:hover::after {
+/*.song-list-tbody > tr:hover::after {
     content: "asdf";
     background-color: #fff;
     height: 10px;
@@ -487,30 +505,30 @@ p {
     left: 0;
 }*/
 
-#song-list-t > tbody > tr:hover {
+.song-list-t > tbody > tr:hover {
     background-image: linear-gradient(0deg, #1c47f6 5%, #00000000 6%)
     
 }
 
-#song-list-t > tbody > tr:hover :first-child {
+.song-list-t > tbody > tr:hover :first-child {
     border-bottom: 0px solid #1C47F6;
 }
 
-#song-list-t > tbody > tr:hover > :first-child {
+.song-list-t > tbody > tr:hover > :first-child {
     opacity: 1;
 }
 
-#song-list-t > tbody > tr > :first-child {
+.song-list-t > tbody > tr > :first-child {
     opacity: 0;
     width: 1em;
     font-family: "Segoe MDL2 Assets"
 }
 
-#song-list-t > tbody > tr :nth-child(2) {
+.song-list-t > tbody > tr :nth-child(2) {
     width: 2em;
 }
 
-#song-list-t > tbody > tr > :last-child {
+.song-list-t > tbody > tr > :last-child {
     text-align: right;
 }
 
@@ -553,6 +571,7 @@ p {
     padding: 0;
     top: calc(10em - 1px);
     left: 0px;
+    z-index: 5;
     border-top: 40px solid #0C59DBDD;
 	border-left: 0px solid transparent;
 	border-right: 25px solid transparent;

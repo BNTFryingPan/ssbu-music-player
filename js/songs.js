@@ -1,5 +1,5 @@
 function getSongImage(song) {
-    var picture = song[0]['picture']
+    let picture = song[0]['picture']
     if (picture) {
         picture = picture[0]
         if (picture) {
@@ -14,12 +14,9 @@ var audioCtx = new AudioContext();
 var src;
 
 async function playSongFromFile(file) {
-    //console.log("hey it updated poggers")
-    //console.log(file)
-    songData = await getSongData(file);
+    let songData = await getSongData(file);
     var song = document.getElementById("song")
     song.src = file;
-    //console.log(songs[songData[0]["album"]])
 
     //var song = document.getElementById(name);
     //var src = audioCtx.createMediaElementSource(song);
@@ -140,7 +137,6 @@ async function playSongFromFile(file) {
     nowPlaying['song']['data'] = songData;
     nowPlaying['startTime'] = Date.now();
     //nowPlaying['song']['index'] = songs['All Songs']['songs'].indexOf(songData)
-    //console.log("song playing")
 
     document.getElementById('now-playing').classList.remove('no-song')
     document.getElementById('song-info-art').src = getSongImage(songData)
@@ -153,7 +149,7 @@ async function playSongFromFile(file) {
     document.getElementById('song-info-line1').innerHTML = songData[0]['year'].toString() + " - " + songData[0]['duration'] + " - [" + songData[0]['disk']['no'] + "/" + songData[0]['disk']['of'] + "] - [" + songData[0]['track']['no'] + "/" + songData[0]['track']['of'] + "]";
     document.getElementById('song-info-line2').innerHTML = songData[1]["codec"] + " - " + songData[1]['container'] + " - lossless: " + songData[1]['lossless']
     
-    var seek = document.getElementById('now-playing-seek-slider');
+    let seek = document.getElementById('now-playing-seek-slider');
 
     song.play();
     nowPlaying['playbackState'] = "Playing"
@@ -162,37 +158,23 @@ async function playSongFromFile(file) {
     updateRPC();
 }
 
-async function createSongListEntryFromSongData(fileLocation) {
-    var entry = "";
-    var songData = null;
-    var metaData = null
-    //console.log(fileName);
-    data = await getSongData(fileLocation);
-    songData = data[0];
-    metaData = data[1];
+async function createSongListEntryFromSongData(fileLocation, extraCode) {
+    let data = await getSongData(fileLocation);
+    let songData = data[0];
+    let metaData = data[1];
     
-    //songData['fileLocation'] = fileLocation;
-    //<div class='song-entry'>
-        //<span class="uiassetfont"></span>
-        //<span>Example Song</span>
-        //<span class="entry-duration">0:00</span>
-    //</div>
-    entry = "<tr onclick=\"playSongFromFile('" + fileLocation.replace("'", "\\'") + "')\"><td></td><td>" + songData['track']['no'] + "</td><td>" + songData['title'] + "</td><td>" + songData['duration'] +  "</td></tr>"
-    //console.log(songData['track'])
-    return entry
+    return "<tr data-songLocation='" + fileLocation + "' onclick=\"playSongFromFile('" + fileLocation.replace("'", "\\'") + "');" + extraCode + "\"><td></td><td>" + songData['track']['no'] + "</td><td>" + songData['title'] + "</td><td>" + songData['duration'] +  "</td></tr>"
 }
 
 async function getSongData(fileName) {
+    if (songs["All Songs"]["songFilePaths"].includes(fileName)) {
+        return songs["All Songs"]["songs"][fileName]
+    }
+
     var songData = null;
     var metaData = null;
-    //console.log(fileName)
     await mm.parseFile(fileName, {duration: true}).then(metadata => {songData = metadata['common']; metaData = metadata['format']});
     var folderPathNames = fileName.replace(/\\/g, "/").split("/");
-    //console.log(folderPathNames);
-    //folderPathNames.reverse().pop();
-    //console.log(folderPathNames);
-    //folderPathNames.reverse();
-    //console.log(folderPathNames);
     var folderPath = ""
     for (dir in folderPathNames) {
         if (dir < folderPathNames.length-1 && dir != 0) {
@@ -202,15 +184,11 @@ async function getSongData(fileName) {
         }
         folderPath += folderPathNames[dir]
     }
-    //console.log(folderPathNames);
-    //return
 
     songData['folder'] = folderPath;
-    //console.log(folderPath)
     songData['fileName'] = fileName.split("/")[fileName.split('/').length-1]
     if (!songData['title']) {
         var title = fileName.split('/')[fileName.split('/').length - 1].split('.mp3')[0];
-        //console.log(title);
         songData['title'] = title
     }
 
@@ -227,8 +205,6 @@ async function getSongData(fileName) {
     songData['duration'] = fancyTimeFormat(metaData["duration"]);
     songData['fileLocation'] = fileName.replace(/\\/g, "/");
     songData['fileLocation'] = songData['fileLocation'].replace(/\\/g, "/")
-    //songData['fileLocation'] = songData['fileLocation'].replace("'", "'")
-    //console.log(songData)
     return [songData, metaData];
 }
 
@@ -236,16 +212,14 @@ async function loadSongsFromFolder(directory, recursive) {
     recursive = recursive || true;
     directory = directory.replace(/\\/g, "/");
     var files = fs.readdirSync(directory)
-    //console.log(files)
     for (var f in files) {
         if (files[f].split('.').length == 1 && recursive) {
             try {
                 loadSongsFromFolder(directory + "/" + files[f])
             } catch (error) {
-                console.log(files[f] + " doesnt have file extension, but isnt folder either!")
+                console.warn(files[f] + " doesnt have file extension, but isnt folder either!")
             }
-        } else if (files[f].endsWith('.mp3')) {
-            //document.getElementById('song-list-tbody').innerHTML += await createSongListEntryFromSongData(files[f]);
+        } else if (files[f].endsWith('.mp3') || files[f].endsWith('.ogg')) {
             var thisSong = await getSongData(directory + "/" + files[f]);
             if (!(songs[thisSong[0]['album']])) {
                 songs[thisSong[0]['album']] = {
@@ -295,7 +269,6 @@ function skipFolder(path) {
 
 async function loadSongsFromMusicFolder() {
     await loadSongsFromFolder(platFolders.getMusicFolder());
-    await loadAlbums();
     //await loadSongsFromFolder(platFolders.getMusicFolder()).then(loadAlbums());
     if (fs.existsSync(platFolders.getMusicFolder() + "/folders.ssbu-music")) {
         let file = fs.readFileSync(platFolders.getMusicFolder() + "/folders.ssbu-music", {encoding: "utf-8"})
@@ -310,4 +283,6 @@ async function loadSongsFromMusicFolder() {
             }
         }
     }
+    await loadAlbums();
+    await loadPlaylists();
 }

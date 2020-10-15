@@ -32,7 +32,7 @@ function fancyTimeFormat(time, forceHours)
 }
 
 function updateShuffleModeText() {
-    let states = {"shuffleall": "Shuffle All", "shufflealbum": "Shuffle Album", "loop": "Loop", "order": "Order"}
+    let states = {"shuffleall": "Shuffle All", "shufflesource": "Shuffle Album or Playlist", "loop": "Loop", "order": "Order"}
     document.getElementById('shuffle-state').innerHTML = states[nowPlaying['shuffleMode']] || "Unknown";
 }
 
@@ -52,7 +52,9 @@ function setTopMenuVisible(visibile) {
         document.getElementById('song-list').style.display = "none";
         document.getElementById('back-button').style.display = "none";
         document.getElementById("services").style.display = "none";
-        document.getElementById("no-songs-notice").style.display = "none"
+        document.getElementById("no-songs-notice").style.display = "none";
+        document.getElementById("pl-song-list").style.display = "none";
+        document.getElementById("playlist-list").style.display = "none";
     } else {
         document.getElementById('top-menu').style.display = "none";
         document.getElementById('now-playing').hidden = false;
@@ -136,6 +138,10 @@ function toggleSongInfoModal(state) {
     }
 }
 
+function openAddToPlaylistMenu() {
+
+}
+
 function updateNormalizationState(state) {
     if (state) {
         userSettings['normalizeVolume'] = true;
@@ -182,6 +188,12 @@ function titlebar_back() {
         document.getElementById('body').setAttribute('data-currentLayer', "album-list")
         nowPlaying['currentPage'] = "Music Page"
         setTimeout(updateScrollbar, 0);
+    } else if (curLayer == 'playlist-song-list') {
+        document.getElementById('playlist-list').style.display = "flex";
+        document.getElementById('pl-song-list').style.display = "none"
+        document.getElementById('body').setAttribute('data-currentLayer', "album-list")
+        nowPlaying['currentPage'] = "Music Page"
+        setTimeout(updateScrollbar, 0);
     } else {
         return;
     }
@@ -196,12 +208,13 @@ function titlebar_settings() {
 }
 
 function settings_acrylic() {
-    state = document.getElementById('settings-acrylic').checked;
-
+    let state = document.getElementById('settings-acrylic').checked;
+    userSettings["windowsAcrylicState"] = state;
+    saveSettingsFile();
     if (state) {
-        ipcRenderer.send("acrylic");
+        ipcRenderer.send("acrylic-enable");
     } else {
-        ipcRenderer.send("disable");
+        ipcRenderer.send("acrylic-disable");
     }
 }
 
@@ -246,12 +259,54 @@ document.onreadystatechange = () => {
             settings_updateCheck();
         }
 
+        loadSettings()
+        document.getElementById('settings-acrylic').checked = userSettings["windowsAcrylicState"]
+        settings_acrylic()
+        song.volume = (userSettings['userVolumeSliderValue'])**3
+        document.getElementById('now-playing-volume-slider').value = userSettings['userVolumeSliderValue']
+        let w = remote.getCurrentWindow();
+        let s = w.getSize();
+        w.setSize(s[0], s[1]+1);
+        w.setSize(s[0], s[1]);
+
         //update windows styles
         var userAccentColor = remote.systemPreferences.getAccentColor().substr(0,6);
         document.documentElement.style.setProperty("--user-accent-color", "#" + userAccentColor);
+
+        document.addEventListener('contextmenu', e => {
+            console.log("user wants to open menu")
+            //debugger
+            for (el in e.path) {
+                if (e.path[el].nodeName === "TR") {
+                    console.log("found element")
+                    contextMenuInformation['target'] = e.path[el].getAttribute("data-songLocation")
+                    let cm = document.getElementById("context-menu");
+                    contextMenuInformation["pos"] = {x: e.pageX, y: e.pageY};
+                    contextMenuInformation["isOpen"] = true
+                    //cm.style.display = "block";
+                    cm.style.top = e.pageY;
+                    cm.style.left = e.pageX;
+                    e.preventDefault();
+                    return;
+                }
+            }
+            console.log("could not find song element")
+            
+        });
+
+        document.addEventListener("click", e => {
+            console.log("closing context menu")
+            document.getElementById("context-menu").style.display = "none"
+            contextMenuInformation['isOpen'] = false
+        })
     }
-    
 };
+
+var contextMenuInformation = {
+    "isOpen": false,
+    "pos": {x: 0, y: 0},
+    "target": null,
+}
 
 function handleWindowControls() {
     let win = remote.getCurrentWindow();
@@ -284,7 +339,6 @@ document.getElementById("list-container-scrollbar").oninput = function(e) {
     let bar = document.getElementById("list-container-scrollbar")
     list.scrollTop = bar.value;
     bar.max = list.scrollHeight - list.clientHeight;
-    console.log("input")
 }
 
 window.onbeforeunload = function(){

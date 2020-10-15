@@ -45,6 +45,8 @@
             <audio id="song">ok boomer</audio>
         </div>
 
+        <div id="context-menu" style="display: none; top: 0; left: 0;">this is the context menu</div>
+
         <header id="titlebar">
             <div id="drag-region">
 
@@ -84,7 +86,7 @@
             <div id='top-settings' style='display: none'>
                 <table>
                     <tr>
-                        <td>Enable Windows 10 Acrylic Background</td>
+                        <td>Enable Vibrancy (Windows and OSX only)</td>
                         <td><input id="settings-acrylic" type="checkbox" checked></td>
                     </tr>
                     <tr>
@@ -135,15 +137,22 @@
                 
                 <div id="album-info-header">
                     <img id="album-info-header-img" class="album-logo" src='./assets/other-album.png' height="100%">
-                    <div id="album-info-header-thing"><span id="album-info-header-thing-text">asdf</span></div>
+                    <div id="album-info-header-thing"><span id="album-info-header-thing-text"></span></div>
                 </div>
                 
                 <div id='list-container'>
                     <input id="list-container-scrollbar" type="range" step="1">
                     <div class="list-spacer"></div>
-                    <div id="song-list" style="display: none">
-                        <table id='song-list-t'>
-                            <tbody id='song-list-tbody'>
+                    <div id="song-list" class="song-list" style="display: none">
+                        <table id='song-list-t' class="song-list-t">
+                            <tbody id='song-list-tbody' class="song-list-tbody">
+                                <tr><td></td><td>0</td><td>Example Song</td><td>0:00</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="pl-song-list" class="song-list" style="display: none">
+                        <table id='pl-song-list-t' class="song-list-t">
+                            <tbody id='pl-song-list-tbody' class="song-list-tbody">
                                 <tr><td></td><td>0</td><td>Example Song</td><td>0:00</td></tr>
                             </tbody>
                         </table>
@@ -239,7 +248,8 @@
                 </div>
                 <div id='song-info'>
                     <input type="button" onclick="toggleSongInfoModal()" value="Song Info" id="song-info-button">
-                    <div id="advanced-song-info-modal" style="display: none">
+                    <input type="button" onclick="openAddToPlaylistMenu()" value="Add To Playlist" id="song-info-atp-button">
+                    <div id="advanced-song-info-modal" style="display: none;z-index:10">
                         <input type="button" onclick="toggleSongInfoModal(false)" value="Back" id="song-info-close">
                         <span id="song-info-title2">title - album - artist</span><br>
                         <span id="song-info-genre">genre - comment</span><br>
@@ -253,8 +263,8 @@
                 </div>
                 <div id='song-controls'>
                     <div id='song-sliders'>
-                        <input type="range" step="0.000001" value=1 max=1 min=0 id="now-playing-volume-slider" oninput="updateVolume()" class="seek-slider"><br>
-                        <input type="range" step="0.000001" id="now-playing-seek-slider" oninput="updateSongProgressFromBar()" class="song-progress seek-slider">
+                        <span>volume</span><input type="range" step="0.000001" value=1 max=1 min=0 id="now-playing-volume-slider" oninput="updateVolume()" class="seek-slider"><br>
+                        <span>seek</span><input type="range" step="0.000001" id="now-playing-seek-slider" oninput="updateSongProgressFromBar()" class="song-progress seek-slider">
                     </div>
                     <div id='song-buttons'>
                         <button id="np-prev"    onclick="prevSong()"><img src="./assets/skip.png" style='transform: scaleX(-1);'></button>
@@ -262,7 +272,7 @@
                         <button id="np=next"    onclick="nextSong()"><img src="./assets/skip.png"></button>
                         <button id="np-shuffle" onclick="shuffleSongs()"><img src="./assets/unknown.png"></button>
                     </div>
-                    <div id='shuffle-state'>Random</div>
+                    <div id='shuffle-state'>Shuffle All</div>
                 </div>
                 <canvas id='visualizer-canvas'></canvas>
             </div>
