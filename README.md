@@ -22,6 +22,7 @@ Last updated for: v0.4.1
 # Planned Features
 Checked off boxes are currntly being worked on
 
+- [ ] Support for mac and linux (currently windows only, although might work on other platforms)
 - [ ] Improved Twitch Integration
     - [ ] Song Request from YouTube with custom requirements (view count, like:dislike ratio, duration, etc.)
     - [ ] Vote skipping songs
@@ -55,4 +56,6 @@ Known issues on Ubuntu:
 
 music might not even play on ubuntu because i didnt have any music on my ubuntu install, and was too lazy to get some.
 
-if you have a mac and want to test and develop for it, go ahead, but i cant and wont help. i dont own a mac
+if you have a mac and want to test and develop for it, go ahead, but i cant help much. i dont own a mac
+
+to run on linux or mac you must either setup a dev environment to run it in. you can choose to build it for your platform after that if you wish to run it without running it through your text editor/ide.
