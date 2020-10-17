@@ -44,7 +44,8 @@ async function loadAlbums() {
             var extraText = ""
             var classes = "album select-hover-anim hide-text"
         }
-        albList.innerHTML += "<button type='button' id='album-list-album-" + alb.toLowerCase() + "' value='" + extraText + "' class='" + classes + "' onclick='openAlbum(\"" + alb + "\")' style='background-image:url(" + songs[alb]['albumArt'] + ")'>" + extraText + "</button>";
+        let extraStyle = ["./assets/none.png", "./assets/all-album.png", "./assets/other-album.png"].includes(songs[alb]["albumArt"]) ? "border-radius:50%" : "border-radius:5%";
+        albList.innerHTML += "<button type='button' id='album-list-album-" + alb.toLowerCase() + "' value='" + extraText + "' class='" + classes + "' onclick='openAlbum(\"" + alb + "\")' style='background-image:url(" + songs[alb]['albumArt'] + ");" + extraStyle + "'>" + extraText + "</button>";
     }
     if (songs['Other']['songCount'] === 0) {
         document.getElementById("album-list-album-other").style.display = "none";

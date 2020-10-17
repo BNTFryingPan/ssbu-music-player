@@ -14,7 +14,7 @@ function getDataFileName() {
     return folderFileData['name'] + folderFileData['ext'];
 }
 
-const fs = require('fs');
+//const fs = require('fs');
 
 var folderData = {
     "C:": {

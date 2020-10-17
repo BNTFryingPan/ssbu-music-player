@@ -1,8 +1,8 @@
-//fs = require('fs');
-const mm = require('music-metadata');
+fs = require('fs');
+//const mm = require('music-metadata-browser');
 const util = require('util');
 const platFolders = require('platform-folders');
-const exec = require('child_process').exec
+//const { ipcRenderer } = require('electron');
 const remote = require('electron').remote;
 
 var song = document.getElementById('song')
@@ -34,6 +34,8 @@ function fancyTimeFormat(time, forceHours)
 function updateShuffleModeText() {
     let states = {"shuffleall": "Shuffle All", "shufflesource": "Shuffle Album or Playlist", "loop": "Loop", "order": "Order"}
     document.getElementById('shuffle-state').innerHTML = states[nowPlaying['shuffleMode']] || "Unknown";
+    let images = {"shuffleall": "shuffle.png", "shufflesource": "shuffle.png", "loop": "loop.png", "order": "order.png"}
+    document.getElementById("np-shuffle-img").src = "./assets/" + (images[nowPlaying["shuffleMode"] || "questionmarkbold.png"])
 }
 
 function updateTitle(text) {
@@ -79,6 +81,14 @@ function openMusicMenu() {
     setTimeout(updateScrollbar, 0);
 }
 
+function refreshSongsAndAlbums() {
+    ipcRenderer.invoke("songs:getSongList").then((value) => {
+        window.Bridge.songs = value;
+        songs = window.Bridge.songs;
+        loadAlbums();
+    })
+}
+
 function setSettingsOpenState(state) {
     if (state) {
         //document.getElementById('body').setAttribute('data-prevLayer', document.getElementById('body').getAttribute('data-currentLayer'))
@@ -114,7 +124,7 @@ function openServicesMenu() {
 }
 
 function openFoldersFile() {
-    exec(platFolders.getMusicFolder() + "/folders.ssbu-music")
+    ipcRenderer.send("file:openMusicFoldersFile")
 }
 
 function toggleSongInfoModal(state) {
@@ -299,6 +309,9 @@ document.onreadystatechange = () => {
             document.getElementById("context-menu").style.display = "none"
             contextMenuInformation['isOpen'] = false
         })
+
+        //loadSongsFromMusicFolder().then((e) => console.log).catch((e) => console.error)
+        //console.log("after load")
     }
 };
 
@@ -348,7 +361,7 @@ window.onbeforeunload = function(){
     //document.getElementById('restore-button').onclick = undefined
 }
 
-loadSongsFromMusicFolder()
+
 
 //song controls:
 

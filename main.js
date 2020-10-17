@@ -1,13 +1,31 @@
 // Modules to control application life and create native browser window
 const {app, ipcMain, systemPreferences, dialog, globalShortcut} = require('electron');
 const path = require('path');
-const platfolders = require('platform-folders');
+const platFolders = require('platform-folders');
 //const ewc = require('@svensken/ewc');
 const { BrowserWindow } = require("electron-acrylic-window");
 const { autoUpdater } = require("electron-updater");
 const { checkForUpdates } = require("./updater")
 const os = require("os");
+const fs = require("fs");
+const exec = require('child_process').exec;
 
+const songsModule = require("./js/songs.js")
+
+//ipcMain.on("songs:getSongList", (e) => {
+//    e.returnValue = songs
+//})
+
+ipcMain.handle("songs:getSongList", (e) => {
+    return songs
+})
+
+ipcMain.on("file:openMusicFoldersFile", () => {
+    if (!fs.existsSync(platFolders.getMusicFolder() + "/folders.ssbu-music")) {
+        fs.writeFileSync(platFolders.getMusicFolder() + "/folders.ssbu-music", "// Hey, just write a list of folders you want to load from here\n// Start a line with any of ['#', '//', '$', '!', '-'] and it will be ignored when being parsed (to write comments)\n// Start a line with '%' to tell the player to also look in subfolders of the folder on that line")
+    }
+    exec(platFolders.getMusicFolder() + "/folders.ssbu-music")
+})
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -25,15 +43,15 @@ function getVibrancySettings() {
         effect: 'acrylic',
         useCustomWindowRefreshMethod: true,
         disableOnBlur: true,
-        debug: true
+        debug: false
     };
     else return 'dark';
 }
 
-function createWindow () {
+async function createWindow () {
     // Create the browser window.
     
-
+    await songsModule.loadSongsFromMusicFolder();
     mainWindow = new BrowserWindow({
         width: 900,
         height: 600,
@@ -44,6 +62,7 @@ function createWindow () {
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: true,
+            enableRemoteModule: true,
             //webSecurity: false
         },
         //backgroundColor: '#44444444',
@@ -54,6 +73,7 @@ function createWindow () {
 
     // and load the index.html of the app.
     mainWindow.loadFile('index.html')
+    //mainWindow.loadURL("chrome://chrome-urls")
 
     // Open the DevTools.
     // mainWindow.webContents.openDevTools()
@@ -66,6 +86,7 @@ function createWindow () {
         mainWindow = null
     });
 
+    
     globalShortcut.register("MediaPlayPause",     keybind_pauseplay);
     globalShortcut.register("MediaStop",          keybind_stop);
     globalShortcut.register("MediaNextTrack",     keybind_next);
@@ -84,7 +105,7 @@ app.on("will-quit", () => {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow)
+app.on('ready', async () => {createWindow()})
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function () {

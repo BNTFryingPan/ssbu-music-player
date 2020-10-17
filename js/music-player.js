@@ -1,25 +1,4 @@
-var songs = {
-    "All Songs": {
-        "albumArt": "./assets/other-album.png",
-        "extraText": "All",
-        "type": "album",
-        "artists": [],
-        "duration": 0,
-        "songCount": 0,
-        "songs": {},
-        "songFilePaths": []
-    },
-    "Other": {
-        "albumArt": './assets/other-album.png',
-        "extraText": "Other",
-        "type": "album",
-        "artists": [], // this would have all songData['albumartist']'s in it,
-        "duration": 0,
-        "songCount": 0,
-        "songs": {},
-        "songFilePaths": []
-    }
-}
+var songs = window.Bridge.songs;
 
 var nowPlaying = {
     "previewedAlbum": "All Songs",
@@ -95,7 +74,10 @@ const artAssetKeyDict = {
     "Hexoscope OST": "hexoscope",
     "Aperture Tag OST": "portal-tag",
     "Portal": "portal1",
-    "%default": "unknown-album-image"
+    "sonic": "sanic",
+    "%default": "unknown-album-image",
+    "%localfiles": "src-localfiles",
+    "%logo": "demisemihemidemisemiquaver",
 }
 
 /* reserved names:
@@ -121,8 +103,11 @@ document.addEventListener('readystatechange', (e) =>{
 function getDiscordArtAssetKeyFromAlbumName(name) {
     if (artAssetKeyDict[name]) {
         return artAssetKeyDict[name]
+    } else if (name.includes("Sonic") || name.includes ("SONIC")) {
+        return artAssetKeyDict["sonic"]
     } else {
-        return artAssetKeyDict["%default"]
+        indx = ["%logo", "%default"][Math.floor(Math.random()*2)]
+        return artAssetKeyDict[indx]
     }
 }
 
@@ -148,12 +133,15 @@ async function updateRPC() {
         else if (nowPlaying['shuffleMode'] == 'order') details += "🔀";
         rpc.setActivity({
             details: details,
-            state: nowPlaying['song']['data'][0]['album'] + " - " + nowPlaying['song']['data'][0]['track']['no'] + "/" + nowPlaying['song']['data'][0]['track']['of'],
+            state: nowPlaying['song']['data'][0]['album'] + " - " +  + "/" + nowPlaying['song']['data'][0]['track']['of'],
             startTimestamp: nowPlaying['startTime'],
             largeImageKey: getDiscordArtAssetKeyFromAlbumName(nowPlaying['song']['data'][0]['album']),
             largeImageText: nowPlaying['song']['data'][0]['artist'],
             smallImageText: nowPlaying['playbackState'] + " | v" + document.getElementById('version-display').innerHTML,
             smallImageKey: "unknown-album-image",
+            partySize: nowPlaying['song']['data'][0]['track']['no'] == "--" ? null : nowPlaying['song']['data'][0]['track']['no'],
+            partyMax: nowPlaying['song']['data'][0]['track']['no'] == "--" ? null : nowPlaying['song']['data'][0]['track']['no'],
+
         });
     }
 } 
@@ -266,10 +254,10 @@ function shuffleSongs() {
     if (nowPlaying['shuffleMode'] == "loop") {
         nowPlaying["shuffleMode"] = "shuffleall";
     } else if (nowPlaying['shuffleMode'] == "shuffleall") {
-        nowPlaying["shuffleMode"] = "order";
+        nowPlaying["shuffleMode"] = "shufflesource";
+    } else if (nowPlaying['shuffleMode'] == "shufflesource") {
+        nowPlaying["shuffleMode"] = "order"
     } else if (nowPlaying['shuffleMode'] == "order") {
-        nowPlaying["shuffleMode"] = "shufflealbum"
-    } else if (nowPlaying['shuffleMode'] == "shufflealbum") {
         nowPlaying["shuffleMode"] = "loop"
     }
 

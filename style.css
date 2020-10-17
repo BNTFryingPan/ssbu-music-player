@@ -629,6 +629,7 @@ p {
     z-index: -1;
     animation: animatedgradient 750ms linear infinite;
     background-size: 500% 500%;
+    border-radius: inherit;
 }
 
 
@@ -651,7 +652,8 @@ p {
     background-position: 0 0;
     border-style: solid;
     border-color: gray;
-    color: white;
+    font-weight: bold;
+    color: #fff;
 }
 
 /* Styling of window frame and titlebar */

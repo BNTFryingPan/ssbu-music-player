@@ -31,13 +31,13 @@
             }
         </script>
 
-    <script defer src="./js/playlists.js"></script>
-    <script defer src="./js/songs.js"></script>
-    <script defer src="./js/albums.js"></script>
     <script defer src="./js/music-player.js"></script>
+    <script defer src="./js/playlists.js"></script>
+    <script defer src="./js/songs-ui.js"></script>
+    <script defer src="./js/albums.js"></script>
     <script defer src="./js/folder-data.js"></script>
-    <script defer src="./js/ui.js"></script> 
     <script defer src="./js/twitch.js"></script>
+    <script defer src="./js/ui.js"></script> 
 
     </head>
     <body id="body" data-currentLevel="top-menu" data-prevLevel="top-menu" data-musicInfoOpen="false" data-settingsOpen="false">
@@ -99,7 +99,7 @@
                     </tr>
                     <tr>
                         <td>
-                            <input id='settings-refresh-albums' value="Refesh Album List" type="button" onclick="loadAlbums()">
+                            <input id='settings-refresh-albums' value="Reload Songs and Albums" type="button" onclick="refreshSongsAndAlbums()">
                             <input id='settings-update' value="Check for updates" type="button">
                             <input value="Open Music Folder File" type="button" onclick="openFoldersFile()">
                         </td>
@@ -113,6 +113,7 @@
                         </td>
                     </tr>-->
                 </table>
+                <span>Art by Minity</span>
                 
                 <div id='settings-info'>TheDerpyMemeSquad</div>
             </div>
@@ -270,7 +271,7 @@
                         <button id="np-prev"    onclick="prevSong()"><img src="./assets/skip.png" style='transform: scaleX(-1);'></button>
                         <button id="np-pause"   onclick="pauseSong()"><img id="np-pause-img" src="./assets/play.png"></button>
                         <button id="np=next"    onclick="nextSong()"><img src="./assets/skip.png"></button>
-                        <button id="np-shuffle" onclick="shuffleSongs()"><img src="./assets/unknown.png"></button>
+                        <button id="np-shuffle" onclick="shuffleSongs()"><img id="np-shuffle-img" src="./assets/questionmarkbold.png"></button>
                     </div>
                     <div id='shuffle-state'>Shuffle All</div>
                 </div>

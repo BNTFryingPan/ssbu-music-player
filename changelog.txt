@@ -1,9 +1,25 @@
+v0.4.2
+added sonic album art (if the album name contains "Sonic" anywhere, it will be used)
+Unknown album, Other album, and All Songs album art updated
+Unknown albums will now show their name inside the (now circle) album art
+The shuffle mode button now has art instead of being the ?
+The new art is made by Minity
+
+Updated electron from 7.3.3 to 10.1.3 to get new Chromium features and also because 7.x.x is depreciated
+Refactored most of the music playing logic and fundamentals (mostly because electron update broke a lot of things)
+    Songs will now be cached so using ctrl+r will not reload the song list or album list.
+    The refresh album list button has been replaced with a button that will refresh both the album list and song list
+playlists are probably going to be pushed back until v0.6.0 because of this rewrite
+the open files folder button will now create the file if it does not exist, and leave a note in the file telling users
+    what they need to do
+**i really need help looking for any bugs in this update. if you find any, please report them**
+
 v0.4.1
 Other album will no longer show up if it has no songs.
 Adjusted scrollbar css a bit because i still havent finalized any of the design elements yet pretty much and its all under 
     active development
 Now saves settings (windows 10 acrylic, and volume slider position)
-Added support for .ogg files
+Added WIP support for .ogg files (idk how well the metadata works on them yet)
 Fixed trying to open the album you just opened would not do anything.
 Adjusted how the sliders look, and added labels to the sliders
 Adjusted RPC to show version and if the music player is running in dev mode

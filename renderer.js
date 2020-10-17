@@ -4,3 +4,9 @@
 // `nodeIntegration` is turned off. Use `preload.js` to
 // selectively enable features needed in the rendering
 // process.
+
+/*let mt = require("mousetrap");
+
+mt.bind(["command+r", "control+r"], () => {
+    return false
+})*/

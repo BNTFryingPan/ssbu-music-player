@@ -6,6 +6,7 @@ var playlists = {
         ],
         "songCount": 2,
         "duration": 0,
+        "showName": false,
     }
 }
 
@@ -22,7 +23,7 @@ async function createSongPlaylistEntryFromSongData(fileLocation, extraCode) {
     let songData = data[0];
     let metaData = data[1];
     
-    return "<tr onclick=\"playSongFromFile('" + fileLocation.replace("'", "\\'") + "');" + extraCode + "\"><td></td><td>" + songData['track']['no'] + "</td><td>" + songData['album'] + "</td><td>" + songData['title'] + "</td><td>" + songData['duration'] +  "</td></tr>"
+    return "<tr onclick=\"playSongFromFile('" + fileLocation.replaceAll("'", "\\'") + "');" + extraCode + "\"><td></td><td>" + songData['track']['no'] + "</td><td>" + songData['album'] + "</td><td>" + songData['title'] + "</td><td>" + songData['duration'] +  "</td></tr>"
 }
 
 async function createSongPlaylistEntry(plSong) {
@@ -53,8 +54,8 @@ async function loadPlaylists() {
     var plList = document.getElementById('playlist-list');
     plList.innerHTML = ""
     for (var pl in playlists) {
-        let art = playlists[pl]["art"] || "./assets/other-album.png"
-        plList.innerHTML += "<button type='button' class='album select-hover-anim' style='background-image:url(" + art + ")' value='" + pl + "' onclick='openPlaylist(\"" + pl + "\")'>" + pl + "</button>";
+        let art = playlists[pl]["art"] || "./assets/none.png"
+        plList.innerHTML += "<button type='button' class='album select-hover-anim' style='background-image:url(" + art.replaceAll(" ", "%20") + ")' value='" + pl + "' onclick='openPlaylist(\"" + pl + "\")'>" + (playlists[pl]["showName"] ? pl : "") + "</button>";
     }
     return true;
 }

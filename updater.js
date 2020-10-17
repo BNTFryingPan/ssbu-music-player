@@ -2,7 +2,7 @@ const { dialog } = require('electron')
 const { autoUpdater } = require('electron-updater')
 
 autoUpdater.logger = require('electron-log');
-autoUpdater.logger.transports.file.level = "silly"
+autoUpdater.logger.transports.file.level = "debug"
 autoUpdater.logger.info("set up logger")
 autoUpdater.autoDownload = false
 
