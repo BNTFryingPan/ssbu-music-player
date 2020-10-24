@@ -17,7 +17,7 @@ async function openAlbum(albumName) {
     if (nowPlaying['openedAlbum'] != albumName) {
         let updatedHTML = "";
         for (song in songs[albumName]["songs"]) {
-            updatedHTML += await createSongListEntryFromSongData(songs[albumName]['songs'][song][0]['fileLocation']);
+            updatedHTML += await createSongListEntryFromSongData(songs[albumName]['songs'][song][0]['fileLocation'], "updateCurrentShuffleSource({type:'album',name:'" + albumName + "'})");
         }
 
         document.getElementById('song-list-tbody').innerHTML = updatedHTML;

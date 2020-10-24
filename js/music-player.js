@@ -23,27 +23,34 @@ var nowPlaying = {
     "isDevelopmentBuild": false,
 };
 
+const { ipcRenderer } = require("electron");
+
 function updateCurrentShuffleSource(newSource) {
+    let updated = "not correct type"
     if (newSource.type == "album") {
         if (songs[newSource.name]) {
             nowPlaying['shuffleSource'] = newSource;
-        }
+            updated = "success"
+        } else updated = "no album"
     } else if (newSource.type == "playlist") {
         if (playlists[newSource.name]) {
             nowPlaying['shuffleSource'] = newSource;
-        }
+            updated = "success"
+        } else updated = "no playlist"
     }
+    console.log("updated shuffle source: " + updated)
+    console.log(newSource)
 }
 
 function getCurrentShuffleSource() {
     let newSource = nowPlaying['shuffleSource']
     if (newSource.type == "album") {
         if (songs[newSource.name]) {
-            return songs[newSource.name]
+            return {"type": "album", "src": songs[newSource.name]}
         }
     } else if (newSource.type == "playlist") {
         if (playlists[newSource.name]) {
-            return playlists[newSource.name]
+            return {"type": "playlist", "src": playlists[newSource.name]}
         }
     }
 }
@@ -53,41 +60,14 @@ var userSettings = {
     "windowsAcrylicState": true,
     "userVolumeSliderValue": 1,
     "enableDeveloperMode": false,
+    "discord": {
+        "enableRPC": true,
+        "largeImageText": "{song.artist}",
+        "smallImageText": "{player.state} | {player.version}",
+        "details": "{song.album}",
+        "state": "{song.title} {player.icons} {player.loops}",
+    }
 }
-
-const artAssetKeyDict = {
-    "A Hat in Time OST": "hatintime",
-    "Celeste (Original Soundtrack)": "celeste",
-    "Celeste: Farewell (Original Soundtrack)": "farewell",
-    "UNDERTALE Soundtrack": "undertale",
-    "Portal 2: Songs to Test By - Volume 1": "portal2",
-    "Portal 2: Songs to Test By - Volume 2": "portal2",
-    "Portal 2: Songs to Test By - Volume 3": "portal2",
-    "Portal 2: Songs to Test By": "portal2",
-    "Terraria Soundtrack Volume 1": "terraria-1",
-    "Terraria Soundtrack Volume 2": "terraria-2",
-    "Terraria Soundtrack Volume 3": "terraria-3",
-    "Keep Talking And Nobody Explodes - OST": "ktane",
-    "Astroneer": "astro-1",
-    "Astroneer (original game soundtrack) Volume 2": "astro-2",
-    "Subnautica Original Soundtrack": "subnautica",
-    "Hexoscope OST": "hexoscope",
-    "Aperture Tag OST": "portal-tag",
-    "Portal": "portal1",
-    "sonic": "sanic",
-    "%default": "unknown-album-image",
-    "%localfiles": "src-localfiles",
-    "%logo": "demisemihemidemisemiquaver",
-}
-
-/* reserved names:
-unknown-album-image - ?
-source-yt - YouTube source image
-source-file - local file source image
-source-sr - Song Request image
-source-spotify - spotify source image
-source-other - other source image
-*/
 
 log = require('electron-log')
 
@@ -100,73 +80,20 @@ document.addEventListener('readystatechange', (e) =>{
     });
 })
 
-function getDiscordArtAssetKeyFromAlbumName(name) {
-    if (artAssetKeyDict[name]) {
-        return artAssetKeyDict[name]
-    } else if (name.includes("Sonic") || name.includes ("SONIC")) {
-        return artAssetKeyDict["sonic"]
-    } else {
-        indx = ["%logo", "%default"][Math.floor(Math.random()*2)]
-        return artAssetKeyDict[indx]
+function randomSong() {
+    let src = getCurrentShuffleSource();
+    if (nowPlaying["shuffleMode"] == "shuffleall") {
+        src = {"type": "album", "src": songs["All Songs"]}
     }
-}
-
-const DiscordRPC = require("discord-rpc");
-const { ipcRenderer } = require("electron");
-const clientID = "659092610400387093";
-//DiscordRPC.register(clientID);
-const rpc = new DiscordRPC.Client({ transport: 'ipc' });
-// ▶️ 🔂 ⏸️ 🔀
-// 🔊 🔉 🔇 🔈 🎶 🎵 💿 🎧 🎤
-
-async function updateRPC() {
-    if (nowPlaying['song']['data'] == null) {
-        rpc.setActivity({details: "Idle ⏹️", state: nowPlaying['currentPage']});
-    } else {
-        let details = nowPlaying['song']['data'][0]['title'] + " ";
-        if (nowPlaying['playbackState'] == "Playing") details += "▶️";
-        else if (nowPlaying['playbackState'] == "Paused") details += "⏸️";
-        else if (nowPlaying['playbackState'] == "Idle") details += "⏹️";
-        if (nowPlaying['shuffleMode'] == 'loop') details += "🔂 " + nowPlaying["loopCount"];
-        else if (nowPlaying['shuffleMode'] == 'shuffleall') details += "🔀";
-        else if (nowPlaying['shuffleMode'] == 'shufflealbum') details += "🔀";
-        else if (nowPlaying['shuffleMode'] == 'order') details += "🔀";
-        rpc.setActivity({
-            details: details,
-            state: nowPlaying['song']['data'][0]['album'] + " - " +  + "/" + nowPlaying['song']['data'][0]['track']['of'],
-            startTimestamp: nowPlaying['startTime'],
-            largeImageKey: getDiscordArtAssetKeyFromAlbumName(nowPlaying['song']['data'][0]['album']),
-            largeImageText: nowPlaying['song']['data'][0]['artist'],
-            smallImageText: nowPlaying['playbackState'] + " | v" + document.getElementById('version-display').innerHTML,
-            smallImageKey: "unknown-album-image",
-            partySize: nowPlaying['song']['data'][0]['track']['no'] == "--" ? null : nowPlaying['song']['data'][0]['track']['no'],
-            partyMax: nowPlaying['song']['data'][0]['track']['no'] == "--" ? null : nowPlaying['song']['data'][0]['track']['no'],
-
-        });
+    
+    if (src["type"] == "album") {
+        var randomSongIndex = parseInt(Math.random() * src['src']['songFilePaths'].length);
+        return {"data": src['src']['songs'][src['src']['songFilePaths'][randomSongIndex]], "index": randomSongIndex, "file": src['src']['songFilePaths'][randomSongIndex]};
+    } else if (src['type'] == "playlist") {
+        let rsong = src['src']['songs'][parseInt(Math.random() * src['src']['songs'].length)];
+        return {"data": getSongData(rsong["dir"]), "index": 0, "file": rsong["dir"]}
     }
-} 
-
-rpc.on('ready', () => {
-    updateRPC();
-    //setInterval(() => {updateRPC()}, 15e3);
-})
-
-rpc.login({ clientId: clientID }).catch(console.error);
-
-function randomSong(source=null) {
-    if (source === null) {
-        source = songs['All Songs']
-    } else {
-        if (source['type'] == "album") {
-            
-        } else if (source['type'] == "playlist") {
-            alert('Playlists dont work yet!')
-            return
-            //TODO: add playlists
-        }
-    }
-    var randomSongIndex = parseInt(Math.random() * source['songFilePaths'].length);
-    return {"data": source['songs'][source['songFilePaths'][randomSongIndex]], "index": randomSongIndex, "file": source['songFilePaths'][randomSongIndex]};
+    
 }
 
 function updateSongProgressFromBar() {
@@ -209,7 +136,8 @@ function nextSong() {
         sendNewSongPlayingMessage(next)
         nowPlaying['loopCount'] = 0;
     } else if (nowPlaying['shuffleMode'] == "shufflesource") {
-        let next = randomSong(songs[nowPlaying['song']['data'][0]['album']])
+        //debugger
+        let next = randomSong()
         playSongFromFile(next['file'])
         sendNewSongPlayingMessage(next)
         nowPlaying['loopCount'] = 0;
@@ -234,7 +162,7 @@ function nextSong() {
         alert("invalid shuffle mode, reverted to shuffle")
     }
 
-    
+    rpcUpdateSong(nowPlaying['song']['data'])
 }
 
 function prevSong(notif) {
@@ -268,6 +196,8 @@ var isChangingSong = false;
 
 function updateVolume() {
     userSettings['userVolumeSliderValue'] = document.getElementById('now-playing-volume-slider').value;
+    document.getElementById("np-slider-volu").innerHTML = parseInt(((userSettings['userVolumeSliderValue'])**3)*100) + " (" + parseInt(userSettings['userVolumeSliderValue']*100)  + ")"
+    //document.getElementById("np-slider-volu").innerHTML = (((userSettings['userVolumeSliderValue'])**3)) + " (" + (userSettings['userVolumeSliderValue'])  + ")"
     saveSettingsFile();
     //gainNode.gain.value = nowPlaying['rawNormalizationGain'] * nowPlaying['userVolumeSliderValue'];//, audioCtx.currentTime);
     //gainNode.gain.value = 0;
@@ -290,12 +220,21 @@ function songTick() {
     
     if (song.paused) {
         document.getElementById('np-pause-img').src = playButtonImage;
+
+        if (nowPlaying["song"]["data"] !== null) document.getElementById("_title").innerHTML = "Paused | " + nowPlaying["song"]["data"][0]['title'] + " - "  + nowPlaying["song"]["data"][0]['album'] + " | Smash Music Player v" + document.getElementById("version-display").innerHTML
     } else {
         document.getElementById('np-pause-img').src = pauseButtonImage;
+        document.getElementById("np-slider-time").innerHTML = fancyTimeFormat(song.currentTime) + " / " + fancyTimeFormat(song.duration)
+
+        if (nowPlaying["song"]["data"] !== null) document.getElementById("_title").innerHTML = nowPlaying["song"]["data"][0]['title'] + " - "  + nowPlaying["song"]["data"][0]['album'] + " | Smash Music Player v" + document.getElementById("version-display").innerHTML
     }
 
     document.getElementById('now-playing-seek-slider').value = song.currentTime;
-    song.volume = (userSettings['userVolumeSliderValue'])**3
+    song.volume = (userSettings['userVolumeSliderValue'] || 1)**3
+
+
+    
+
     /*if (!calculatingGain) {
         document.getElementById("song-info-normalization").innerHTML = gainNode.gain.value + " = " + nowPlaying['rawNormalizationGain'] + "x" + userSettings['userVolumeSliderValue'];
     } else {

@@ -95,7 +95,6 @@ async function getSongData(fileName) {
     songData['disk']["of"] = songData['disk']["of"] || "-";
 
     songData['duration'] = fancyTimeFormat(metaData["duration"]);
-    songData['rawDuration'] = metaData["duration"]
     songData['fileLocation'] = fileName.replace(/\\/g, "/");
     songData['fileLocation'] = songData['fileLocation'].replace(/\\/g, "/")
     return [songData, metaData];
@@ -189,7 +188,7 @@ async function loadSongsFromMusicFolder() {
     }
     //await loadAlbums();
     //await loadPlaylists();
-    return true
+    return global.songs
 }
 
 exports.loadSongsFromMusicFolder = loadSongsFromMusicFolder;

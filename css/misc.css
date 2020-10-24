@@ -1,0 +1,124 @@
+* {margin: 0; padding: 0; border: 0; user-select: none;}
+html {box-sizing: border-box;}
+*, *:before, *:after {box-sizing: inherit;}
+html, body {height: 100%; margin: 0;}
+hr {border-style: inset; border-width: 1px}
+
+#context-menu {
+    position: absolute;
+    background-color: #555555aa;
+    height: 0px;
+    overflow: hidden;
+    transition-duration: 100ms;
+    transition-property: height;
+}
+
+#context-menu.opened {
+    height: 3em !important;
+    transition-duration: 100ms;
+    transition-property: height;
+}
+
+body {
+    font-family: "Segoe UI", sans-serif;
+    color: #FFF;
+}
+
+h1 {
+    margin: 0 0 10px 0;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+p {
+    margin-top: 10px;
+    color: rgba(255,255,255,0.4);
+}
+
+#normal {
+    display: block;
+    height: 100%;
+}
+
+*[hidden] > * {
+    display: none;
+    opacity: 0;
+    height: 0;
+    width: 0;
+}
+
+#album-list, #song-list, #playlist-list, #no-songs-notice, #pl-song-list, #no-pl-notice {
+    background-color: #000000cc;
+    z-index: 0;
+    padding: 10px;
+    margin: 0%;
+    margin-bottom: 4%;
+    width: 93%;
+    min-height: 1%;
+    height: auto;
+    position: absolute;
+    right: 3%;
+}
+
+.select-hover-anim {
+    --borderWidth: 10px;
+    background: #1D1F20;
+    position: relative;
+    border-radius: 0;
+    border-width: 5px;
+    border-color: #000;
+}
+
+.select-hover-anim:hover:before {
+    content: '';
+    position: absolute;
+    top: calc(-1 * var(--borderWidth));
+    left: calc(-1 * var(--borderWidth));
+    height: calc(100% + var(--borderWidth) * 2);
+    width: calc(100% + var(--borderWidth) * 2);
+    background: linear-gradient(113deg, #F08600 0%, #F08600 50%, #f0e000 75%, rgb(65, 65, 65) 85%, #F08600 85%, #F08600 100%);
+    z-index: -1;
+    animation: animatedgradient 750ms linear infinite;
+    background-size: 500% 500%;
+    border-radius: inherit;
+}
+
+#settings-info {
+    position: absolute;
+    text-align: right;
+    bottom: 0;
+    right: 0;
+}
+
+
+@keyframes animatedgradient {
+	0% {
+		background-position: 150% 100%;
+	}
+	100% {
+		background-position: 0% 0%;
+	}
+}
+
+#top-settings {
+    position: fixed;
+    z-index: 10;
+    top: 15%;
+    left: 10%;
+    border: solid 1px #fff;
+    height: 70%;
+    width: 80%;
+    backdrop-filter: blur(5px);
+}
+
+#top-updater {
+    position: fixed;
+    z-index: 10;
+    top: 15%;
+    left: 10%;
+    border: solid 1px #fff;
+    height: 70%;
+    width: 80%;
+    backdrop-filter: blur(5px);
+}
+

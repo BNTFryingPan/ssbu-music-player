@@ -31,6 +31,10 @@ function fancyTimeFormat(time, forceHours)
     return ret;
 }
 
+ipcRenderer.on("songs:refreshList", (event) => {
+    refreshSongsAndAlbums()
+})
+
 function updateShuffleModeText() {
     let states = {"shuffleall": "Shuffle All", "shufflesource": "Shuffle Album or Playlist", "loop": "Loop", "order": "Order"}
     document.getElementById('shuffle-state').innerHTML = states[nowPlaying['shuffleMode']] || "Unknown";
@@ -104,7 +108,7 @@ function setSettingsOpenState(state) {
 function openPlaylistMenu() {
     setTopMenuVisible(false);
     document.getElementById('body').setAttribute('data-currentLayer', "playlist-menu")
-    document.getElementById('playlist-list').style.display = "block"
+    document.getElementById('playlist-list').style.display = "flex"
     document.getElementById('list-container').style.display = "block"
     document.getElementById('normal').hidden = false;
     nowPlaying['currentPage'] = "Playlists"
@@ -146,10 +150,6 @@ function toggleSongInfoModal(state) {
             document.getElementById('body').setAttribute('data-songInfoOpen', "false")
         }
     }
-}
-
-function openAddToPlaylistMenu() {
-
 }
 
 function updateNormalizationState(state) {
@@ -272,8 +272,9 @@ document.onreadystatechange = () => {
         loadSettings()
         document.getElementById('settings-acrylic').checked = userSettings["windowsAcrylicState"]
         settings_acrylic()
-        song.volume = (userSettings['userVolumeSliderValue'])**3
+        song.volume = (userSettings['userVolumeSliderValue'] || 1)**3
         document.getElementById('now-playing-volume-slider').value = userSettings['userVolumeSliderValue']
+        updateVolume()
         let w = remote.getCurrentWindow();
         let s = w.getSize();
         w.setSize(s[0], s[1]+1);
@@ -284,35 +285,48 @@ document.onreadystatechange = () => {
         document.documentElement.style.setProperty("--user-accent-color", "#" + userAccentColor);
 
         document.addEventListener('contextmenu', e => {
-            console.log("user wants to open menu")
+            //console.log("user wants to open menu")
             //debugger
             for (el in e.path) {
                 if (e.path[el].nodeName === "TR") {
-                    console.log("found element")
-                    contextMenuInformation['target'] = e.path[el].getAttribute("data-songLocation")
-                    let cm = document.getElementById("context-menu");
-                    contextMenuInformation["pos"] = {x: e.pageX, y: e.pageY};
-                    contextMenuInformation["isOpen"] = true
-                    //cm.style.display = "block";
-                    cm.style.top = e.pageY;
-                    cm.style.left = e.pageX;
-                    e.preventDefault();
-                    return;
+                    //console.log("found element")
+                    let target = e.path[el].getAttribute("data-songLocation")
+                    if (target) {
+                        contextMenuInformation['target'] = e.path[el].getAttribute("data-songLocation")
+                        let cm = document.getElementById("context-menu");
+                        contextMenuInformation["pos"] = {x: e.pageX, y: e.pageY};
+                        contextMenuInformation["isOpen"] = true
+                        cm.style.display = "block";
+                        cm.style.top = e.pageY + "px";
+                        cm.style.left = e.pageX + "px";
+                        //cm.classList.remove("opened")
+                        cm.classList.add("opened")
+                        e.preventDefault();
+                        //console.log(e)
+                        //setTimeout(() => {cm.classList.add("opened")}, 2)
+                        return;
+                    }
                 }
             }
-            console.log("could not find song element")
+            //console.log("could not find song element")
             
         });
 
         document.addEventListener("click", e => {
-            console.log("closing context menu")
-            document.getElementById("context-menu").style.display = "none"
+            //console.log(e)
+            document.getElementById("context-menu").classList.remove("opened")
+            //setTimeout(() => {document.getElementById("context-menu").style.display = "none"})
             contextMenuInformation['isOpen'] = false
         })
 
         //loadSongsFromMusicFolder().then((e) => console.log).catch((e) => console.error)
         //console.log("after load")
+        loadAlbums()
+        loadPlaylists()
     }
+
+    updateRPC()
+    ipcRenderer.send("console:getlogs");
 };
 
 var contextMenuInformation = {

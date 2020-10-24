@@ -2,9 +2,16 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>Music Player</title>
+        <title id="_title">Music Player</title>
 
-        <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="./css/albums.css">
+        <link rel="stylesheet" href="./css/listcontainer.css">
+        <link rel="stylesheet" href="./css/misc.css">
+        <link rel="stylesheet" href="./css/nowplaying.css">
+        <link rel="stylesheet" href="./css/services.css">
+        <link rel="stylesheet" href="./css/songlist.css">
+        <link rel="stylesheet" href="./css/titlebar.css">
+        <link rel="stylesheet" href="./css/topmenu.css">
         <script>
             //var audioCtx = new AudioContext();
             //var audioElem;
@@ -37,6 +44,7 @@
     <script defer src="./js/albums.js"></script>
     <script defer src="./js/folder-data.js"></script>
     <script defer src="./js/twitch.js"></script>
+    <script defer src="./js/discord-presence.js"></script>
     <script defer src="./js/ui.js"></script> 
 
     </head>
@@ -45,7 +53,10 @@
             <audio id="song">ok boomer</audio>
         </div>
 
-        <div id="context-menu" style="display: none; top: 0; left: 0;">this is the context menu</div>
+        <div id="context-menu" style="top: 0; left: 0; z-index: 100;">
+            <span onclick="cm_openATPMenu()">Add to Playlist</span><br><hr>
+            <span onclick="cm_playSong()">Play</span><br>
+        </div>
 
         <header id="titlebar">
             <div id="drag-region">
@@ -113,12 +124,12 @@
                         </td>
                     </tr>-->
                 </table>
-                <span>Art by Minity</span>
+                <span><a href="https://discord.gg/WfFe3Ss">Discord</a><br>Art by Minity</span>
                 
                 <div id='settings-info'>TheDerpyMemeSquad</div>
             </div>
             <div id='top-menu'>
-                <div id="top-music-button" onclick="loadAlbums();openMusicMenu();" class="top-button select-hover-anim">
+                <div id="top-music-button" onclick="openMusicMenu();" class="top-button select-hover-anim">
                     Music
                 </div>
                 <div id="top-playlist-button" onclick="openPlaylistMenu()" class="top-button select-hover-anim">
@@ -144,24 +155,13 @@
                 <div id='list-container'>
                     <input id="list-container-scrollbar" type="range" step="1">
                     <div class="list-spacer"></div>
-                    <div id="song-list" class="song-list" style="display: none">
-                        <table id='song-list-t' class="song-list-t">
-                            <tbody id='song-list-tbody' class="song-list-tbody">
-                                <tr><td></td><td>0</td><td>Example Song</td><td>0:00</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div id="pl-song-list" class="song-list" style="display: none">
-                        <table id='pl-song-list-t' class="song-list-t">
-                            <tbody id='pl-song-list-tbody' class="song-list-tbody">
-                                <tr><td></td><td>0</td><td>Example Song</td><td>0:00</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
+                    <div id="song-list"    class="song-list" style="display: none"><table id='song-list-t'    class="song-list-t"><tbody id='song-list-tbody'    class="song-list-tbody"></tbody></table></div>
+                    <div id="pl-song-list" class="song-list" style="display: none"><table id='pl-song-list-t' class="song-list-t"><tbody id='pl-song-list-tbody' class="song-list-tbody"></tbody></table></div>
                     <div id='album-list' style="display: none"></div>
                     <div id="playlist-list" style="display: none"></div>
                     <div id='no-songs-notice' style="display: none"><span>Hey! We couldn't find any of your music! Make sure your music is in your user Music folder, or <a onclick="openFoldersFile()">click here to open the music folder file</a> to add music directories that we should check in.</span></div>
-                    
+                    <div id='no-pl-notice' style="display: none"><span>Hey! It looks like you haven't created any playlists yet. Go back to Music to make some! (In the future, you may be able to import playlists from other sources)</span></div>
+
                     <div id="services" style="display: none">
                         <div id="s-yt-test-area">
                             <div id="player"></div>
@@ -248,7 +248,7 @@
                     <span>Local Files</span>
                 </div>
                 <div id='song-info'>
-                    <input type="button" onclick="toggleSongInfoModal()" value="Song Info" id="song-info-button">
+                    <input type="button" onclick="toggleSongInfoModal()"   value="Song Info"       id="song-info-button">
                     <input type="button" onclick="openAddToPlaylistMenu()" value="Add To Playlist" id="song-info-atp-button">
                     <div id="advanced-song-info-modal" style="display: none;z-index:10">
                         <input type="button" onclick="toggleSongInfoModal(false)" value="Back" id="song-info-close">
@@ -258,14 +258,20 @@
                         Format: <span id="song-info-line2">MP3 - MPEG - lossless</span><br>
                         Normalization Gain: <span id='song-info-normalization'>{null}</span>
                     </div>
+                    <div id="song-info-addtopl" style="display: none;z-index:10">
+                        <input type="button" onclick="openAddToPlaylistMenu(false)" value="Cancel" id="atp-menu-close">
+                        Playlist: <select id="atp-select-pl" oninput="updateAddToPlaylistMenu()"><option value="%new">New Playlist</option></select><br>
+                        Playlist to create: <input type="text" id="atp-new-pl-name" placeholder="name of playlist"><br>
+                        <input type="button" onclick="addSongToPlaylistButton()" value="Add to Playlist" id="atp-menu-add-button">
+                    </div>
                     <div id="song-info-title"></div>
                     <div id="song-info-album"></div>
                     <div id="song-info-artist"></div>
                 </div>
                 <div id='song-controls'>
                     <div id='song-sliders'>
-                        <span>volume</span><input type="range" step="0.000001" value=1 max=1 min=0 id="now-playing-volume-slider" oninput="updateVolume()" class="seek-slider"><br>
-                        <span>seek</span><input type="range" step="0.000001" id="now-playing-seek-slider" oninput="updateSongProgressFromBar()" class="song-progress seek-slider">
+                        <span id="np-slider-volu"></span><input type="range" step="0.000001" value=1 max=1 min=0 id="now-playing-volume-slider" oninput="updateVolume()" class="seek-slider"><br>
+                        <span id="np-slider-time"></span><input type="range" step="0.000001" id="now-playing-seek-slider" oninput="updateSongProgressFromBar()" class="song-progress seek-slider">
                     </div>
                     <div id='song-buttons'>
                         <button id="np-prev"    onclick="prevSong()"><img src="./assets/skip.png" style='transform: scaleX(-1);'></button>

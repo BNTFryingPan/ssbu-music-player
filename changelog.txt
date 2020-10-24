@@ -1,3 +1,53 @@
+v0.4.3
+i forgot to update the application icon in 0.4.2 so i did that.
+you can now create and add songs to playlists
+    the add to playlist menu is very jank right now, but i will improve it later
+    shuffle all will not care about playlists, so use shuffle album/playlist if you want to shuffle a playlist
+    playlists are no where near finished, but they kinda work
+    playlists todo:
+        allow adding art to a playlist
+        allow renaming playlists
+        improve add to playlist ui
+made the context menu show up, however its buttons do not work yet. will probably finish this in 0.4.5 or something
+settings now merge your personal settings with the default settings
+    if you used an older version and updated where there are new settings, it will take the default settings file, and
+    replace any fields from your existing settings file replace them in the default settings file. basically new settings
+    will have their default values until you change them, and old settings will stay the same, and unchanged.
+started working on discord listening parties. You can send an invite in discord using the + button while the music player
+    is playing music, but it does not do anything yet
+    the plan is to make it stream music through a websocket to people in the listening party.
+added settings for rich presence. you can customize the text fields by opening the settings file located at
+    ~/Music/settings.ssbu-music
+    supports placeholders:
+        song
+            .title  - The name of the song
+            .artist - The song artist
+            .album  - The album of the song
+            .track
+                .no - the track number
+                .of - the number of tracks in the album
+            .disk/.disc
+                .no - the disk number
+                .of - the number of disks in the album
+        player
+            .state   - if the song is playing or paused
+            .loops   - the number of times the song has looped if looping is on
+            .version - the player version
+            .icons   - playback icons (paused/play, shuffle mode)
+            .page    - the currently open ui page
+        meta
+            .bitrate  - the bitrate of the file
+            .duration - the duration of the song
+        examples:   "{song.title} by {song.artist} in {song.album}"
+                    "track {song.track.no} of {song.track.of}"
+                    "{player.state} {player.icons} {player.loops}"
+
+technical changes:
+    main process now logs what it is doing while starting and for certain events during run time
+    main process uses a custom logging function that will also send the output to the devtools console for debugging in
+        non-development environments
+    moved some more file interaction to the main process instead of the browser window
+
 v0.4.2
 added sonic album art (if the album name contains "Sonic" anywhere, it will be used)
 Unknown album, Other album, and All Songs album art updated
@@ -48,9 +98,9 @@ Will now load from files defined in Music/folders.ssbu-music
     Lines that start with "%" will tell it to recusively load songs in subfolders of that folder
 Moved some buttons around in settings to make it look a *little* better. I really need to work on that at some point though
 Changed the volume slider to be non-linear. The slider and output volume ranges from 0 to 1, and the slider volume it put 
-    into the equation x^3 before being given to the output. This allows finer control of volume at lower levels, but less
-    at higher levels, although it doesnt really matter because humans hear volume non-lineraly. google it if you care enough
-    i do want feedback on this though, so if you feel it should be adjusted, just make a github issue with want you want out
+    into the equation x^3 before being given to the output. This allows finer control of volume at lower levels, but less at
+    higher levels, although it doesnt really matter because humans hear volume non-lineraly. google it if you care enough i
+    do want feedback on this though, so if you feel it should be adjusted, just make a github issue with want you want out
     of the volume slider.
 Changed some layout things that should not be noticable, but should slightly improve performace (removed some spacer elements
     that didnt actually do anything and removed some calcs in css to improve performance)
@@ -75,11 +125,11 @@ At some point i added rich presence assets for more albums i listen to. heres a 
     "Terraria Soundtrack Volume 2", "Terraria Soundtrack Volume 3", "Keep Talking And Nobody Explodes - OST", "Portal",
     "Astroneer (original game soundtrack) Volume 2", "Subnautica Original Soundtrack",  
 ]
-If you want any that are not already here, please make a github issue and provide a list of names you want converted to
-    that album image (for example "Portal 2: Songs to Test By" and "Portal 2: Songs to Test By - Volume 1" have the same
-    album image), and either upload or link to an image that is at least 512x512 (1024x1024 recommended) and is in .png,
-    .jpg, or .jpeg format (that is what discord wants and needs for a rich presence asset). You can also look at
-    music-player.js for an up-to-date list, although it may be for an unreleased version.
+If you want any that are not already here, please make a github issue and provide a list of names you want converted to that
+    album image (for example "Portal 2: Songs to Test By" and "Portal 2: Songs to Test By - Volume 1" have the same album
+    image), and either upload or link to an image that is at least 512x512 (1024x1024 recommended) and is in .png, .jpg, or
+    .jpeg format (that is what discord wants and needs for a rich presence asset). You can also look at music-player.js for
+    an up-to-date list, although it may be for an unreleased version.
 
 v0.3.9
 Moved some files around internally to be more organized

@@ -10,6 +10,10 @@
             "name": "Electron Main",
             "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
             "program": "${workspaceFolder}/main.js",
+            "resolveSourceMapLocations": [
+                "${workspaceFolder}/**",
+                "!**/node_modules/**"
+            ],
             "skipFiles": [
                 "<node_internals>/**"
             ]
@@ -20,6 +24,10 @@
             "name": "ssbu-music-player",
             "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
             "program": "${workspaceFolder}/main.js",
+            "resolveSourceMapLocations": [
+                "${workspaceFolder}/**",
+                "!**/node_modules/**"
+            ],
             "skipFiles": [
                 "<node_internals>/**"
             ],

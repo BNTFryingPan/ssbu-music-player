@@ -1,0 +1,253 @@
+#now-playing {
+    background-color: #1B4CFE44;
+    position: fixed;
+    left: 0px;
+    top: 0px;
+    height: calc(100%);
+    width: calc(30%);
+    padding: 0;
+}
+
+#now-playing > * {
+    z-index: 2;
+}
+
+#song-buttons {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    bottom: 1.5em;
+    
+}
+
+#song-sliders {
+    position: absolute;
+    bottom: calc(50px + 2em);
+    left: 5%;
+    width: 90%;
+    height: 3em;
+}
+
+#song-sliders > span {
+    position: absolute;
+    opacity: 0.5;
+    z-index: 0;
+    pointer-events: none;
+}
+
+#song-sliders > input {
+    margin-bottom: 1em;
+}
+
+#song-buttons > button {
+    background-color: blue;
+    color: #fff;
+    font-size: large;
+    height: 2em;
+    padding: 0.5em;
+    margin: 2px;
+    border-radius: 10px;
+}
+
+#song-buttons > button > img {
+    background-color: rgba(0,0,0,0);
+    height: 1em;
+    width: 1em;
+}
+
+
+#np-prev {
+    border-radius: 15px 10px 10px 15px !important;
+}
+/*
+#np-pause {
+    
+}
+
+#np-next {
+
+}
+*/
+#np-shuffle {
+    border-radius: 10px 15px 15px 10px !important;
+}
+
+#shuffle-state {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+}
+
+.seek-slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 10px;
+    background: #2145F1;
+    outline: none;
+    margin: 0px;
+    margin-top: 6px;
+    margin-bottom: 6px;
+    border-radius: 10px;
+    z-index: 1;
+}
+
+#now-playing-seek-slider::-webkit-slider-thumb {
+    opacity: 0.3;
+}
+
+.seek-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: #40d0e0;
+    cursor: grab;
+    opacity: 0.1;
+}
+
+.seek-slider:hover::-webkit-slider-thumb {
+    opacity: 0.8 !important;
+}
+
+.seek-slider::-webkit-slider-thumb:active {
+    cursor: grabbing;
+}
+
+.seek-slider::-webkit-slider-thumb:hover {
+    opacity: 1 !important;
+}
+
+#song-info {
+    position: absolute;
+    background-color: rgba(0,0,0,0.5);
+    overflow-y: visible;
+    overflow-x: hidden;
+    top: 40%;
+    width: 100%;
+    height: 30%;
+    transition-property: background-color;
+    opacity: 1;
+    transition-duration: 500ms;
+}
+
+.no-song #song-info {
+    opacity: 0;
+}
+
+#song-info-button {
+    position: absolute;
+    top: 0;
+    right: 0;
+    color: #fff;
+    background-color: #fff0;
+    border-style: solid;
+    border-width: 2px;
+    border-radius: 2px;
+}
+
+#advanced-song-info-modal {
+    position: fixed;
+    z-index: 10;
+    top: 30%;
+    left: 20%;
+    height: 40%;
+    width: 60%;
+    border-width: 5px;
+    border-style: solid;
+    border-color:#fff;
+    backdrop-filter: blur(10px);
+}
+
+#song-info-addtopl {
+    position: fixed;
+    z-index: 10;
+    top: 30%;
+    left: 20%;
+    height: 40%;
+    width: 60%;
+    border-width: 5px;
+    border-style: solid;
+    border-color:#fff;
+    backdrop-filter: blur(10px);
+}
+
+#song-info-close, #atp-menu-close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    transform: translate(-50% -50%);
+}
+
+#song-info-title {
+    position: absolute;
+    top: 2em;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-size: x-large;
+}
+
+#song-info-album {
+    position: absolute;
+    top: 8em;
+    left: 0;
+    width: 100%;
+    text-align: center;
+}
+
+#song-info-artist {
+    text-align: center;
+    font-size: small;
+    position: absolute;
+    width: 100%;
+    bottom: 0.75em;
+}
+
+#visualizer-canvas {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    z-index: 0;
+}
+
+.now-playing-spacer {
+    height: 100%;
+    width: 30%
+}
+
+
+
+#song-controls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+}
+
+
+
+#song-alb-img {
+    position: absolute;
+    top: 10%;
+    height: 20%;
+    width: 100%;
+}
+
+#song-alb-img > img {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, 0%)
+}
+
+#song-alb-img > span {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    bottom: -50%;
+}

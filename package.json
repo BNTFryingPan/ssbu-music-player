@@ -1,8 +1,12 @@
 {
     "name": "ssbu-music-player",
-    "version": "0.4.2",
+    "version": "0.4.3-pre1",
     "description": "A music player that looks like 'Sounds' in 'Vault' in SSBU",
     "main": "main.js",
+    "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+    ],
     "publish": {
         "provider": "github",
         "releaseType": "release"
@@ -64,6 +68,8 @@
         "music-metadata": "^7.4.0",
         "platform-folders": "^0.4.1",
         "rangeslider.js": "^2.3.3",
+        "websocket-stream": "^5.5.2",
+        "ws": "^7.3.1",
         "ytdl-core": "^1.0.3"
     }
 }

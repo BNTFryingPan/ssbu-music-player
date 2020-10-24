@@ -1,0 +1,21 @@
+#services {
+    padding: 0px;
+    z-index: 0;
+    margin: 0%;
+    width: 93%;
+    min-height: 1%;
+    height: auto;
+    position: absolute;
+    right: 3%;
+}
+
+#services > div {
+    background-color: #000000cc;
+    padding: 10px;
+    margin: 0%;
+    margin-bottom: 4%;
+    width: 93%;
+    min-height: 1%;
+    height: auto;
+    right: 3%;
+}

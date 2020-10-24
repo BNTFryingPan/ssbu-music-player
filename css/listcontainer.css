@@ -1,0 +1,82 @@
+#list-container {
+    overflow-y: scroll;
+    padding-left: 5%;
+    padding-right: 5%;
+    padding-top: 0%;
+    padding-bottom: 5%;
+    height: 100%;
+    width: calc(70% - 1px);
+    display: block;
+    position: fixed;
+    bottom: 0;
+    right: 0;
+}
+
+.list-spacer {
+    height: calc(11em - 1px + 40px)
+}
+
+#list-container-scrollbar {
+    -webkit-appearance: none; /* WebKit */
+    transform: rotate(90deg);
+    transform-origin: top right;
+    height: 8px;
+    width: calc(90vh - 10em - 32px + 6px);
+    padding: 0;
+    margin: 0;
+    background: #1C47F6;
+    outline: none;
+    z-index: 0;
+    position: fixed;
+    bottom: 3vh;
+    right: 1vh;
+    border-radius: 4px;
+}
+
+#list-container-scrollbar::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #40d0e0;
+    cursor: grab;
+    opacity: 0.5;
+}
+
+#list-container-scrollbar:hover::-webkit-slider-thumb {
+    opacity: 0.8
+}
+
+#list-container-scrollbar::-webkit-slider-thumb:active {
+    cursor: grabbing;
+}
+
+#list-container-scrollbar::-webkit-slider-thumb:hover {
+    opacity: 1;
+}
+
+#list-container::-webkit-scrollbar {
+    width: 0px;
+    height: 10em;
+    position: fixed;
+    margin: 1px;
+    bottom: 0;
+    right: 0;
+    padding: 0;
+}
+/*
+#list-container::-webkit-scrollbar-track {
+    background : #555999;
+    border-radius: 10px;
+    padding: 0;
+    position: fixed;
+    bottom: 0;
+    right: 1px;
+}
+
+#list-container::-webkit-scrollbar-thumb {
+    background : rgba(255,255,255,0.5);
+    border-radius: 10px;
+    box-shadow:  0 0 6px rgba(0, 0, 0, 0.5);
+}*/

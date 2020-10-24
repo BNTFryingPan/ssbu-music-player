@@ -1,6 +1,10 @@
 var folderFileData = {
-    "name": "",
-    "ext": ".ssbu-music"
+    "data": "",
+    "settings": "settings",
+    "playlists": "playlists",
+    "ext": ".ssbu-music",
+    "dev-ext": ".ssbu-music-dev",
+    "useDev": nowPlaying["isDevelopmentBuild"]
 }
 
 var blankFolderData = {
@@ -10,27 +14,37 @@ var blankFolderData = {
     "fileDataVer": 0
 }
 
+function getFileExtension() {
+    return (folderFileData["useDev"] ? folderFileData["dev-ext"] : folderFileData['ext'])
+}
+
 function getDataFileName() {
-    return folderFileData['name'] + folderFileData['ext'];
+    return folderFileData['data'] + getFileExtension();
+}
+
+function getSettingsFileName() {
+    return folderFileData['settings'] + getFileExtension();
+}
+
+function getPlaylistsFileName() {
+    return folderFileData['playlists'] + getFileExtension();
 }
 
 //const fs = require('fs');
 
-var folderData = {
-    "C:": {
-
-    }
-}
+//var folderData = {
+//    "C:": {
+//
+//    }
+//}
 
 function getSongFolderData(song) {
-    let folderFile = song[0]['folder'] + "/" + getDataFileName();
-    return parseFolderDataFile(folderFile);
+    return parseFolderDataFile(song[0]['folder'] + "/" + getDataFileName());
 
 }
 
 function parseFolderData(dir) {
-    let folderFile = dir + "/" + getDataFileName();
-    return parseFolderDataFile(folderFile);
+    return parseFolderDataFile(dir + "/" + getDataFileName());
 }
 
 /*function saveAlbumHtmlToFile(path, album, html) {
@@ -70,18 +84,35 @@ function saveFolderDataFile(path, data) {
 }
 
 function readSettingsFile() {
-    if (fs.existsSync(platFolders.getMusicFolder() + "/settings.ssbu-music")) {
-        return JSON.parse(fs.readFileSync(platFolders.getMusicFolder() + "/settings.ssbu-music"))
+    if (fs.existsSync(platFolders.getMusicFolder() + "/" + getSettingsFileName())) {
+        return JSON.parse(fs.readFileSync(platFolders.getMusicFolder() + "/" + getSettingsFileName()))
     } else {
-        fs.writeFileSync(platFolders.getMusicFolder() + "/settings.ssbu-music", JSON.stringify(userSettings))
+        fs.writeFileSync(platFolders.getMusicFolder() + "/" + getSettingsFileName(), JSON.stringify(userSettings))
         return userSettings
     }
 }
 
 function saveSettingsFile() {
-    fs.writeFileSync(platFolders.getMusicFolder() + "/settings.ssbu-music", JSON.stringify(userSettings))
+    fs.writeFileSync(platFolders.getMusicFolder() + "/" + getSettingsFileName(), JSON.stringify(userSettings))
 }
 
 function loadSettings() {
-    userSettings = readSettingsFile()
+    let file = readSettingsFile()
+    //console.log(userSettings)
+    //console.log(file)
+    file.discord = {...userSettings.discord, ...file.discord}
+    userSettings = {...userSettings, ...file}
+    //console.log(userSettings)
+}
+
+function savePlaylistsToFile() {
+    fs.writeFileSync(platFolders.getMusicFolder() + "/" + getPlaylistsFileName(), JSON.stringify(playlists))
+}
+
+function loadPlaylistsFromFile() {
+    if (fs.existsSync(platFolders.getMusicFolder() + "/" + getPlaylistsFileName())) {
+        playlists = JSON.parse(fs.readFileSync(platFolders.getMusicFolder() + "/" + getPlaylistsFileName()))
+    } else {
+        fs.writeFileSync(platFolders.getMusicFolder() + "/" + getPlaylistsFileName(), JSON.stringify(playlists))
+    }
 }

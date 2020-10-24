@@ -16,15 +16,20 @@ function getSongImage(song) {
 async function getSongData(fileName) {
     if (global.songs["All Songs"]["songFilePaths"].includes(fileName)) {
         return global.songs["All Songs"]["songs"][fileName]
+    } else {
+        console.warn("Attempted to get song data for unloaded song: " + fileName)
+        // currently returns this to hopefully show 'undefined' instead of throwing an error. probably a bad way to do it, but idrc for now because this is going to change probably
+        return [{}, {}] // TODO: request for song data from the main process
     }
 }
 
 async function playSongFromFile(file) {
     let songData = await getSongData(file);
     var song = document.getElementById("song")
-    song.src = file;
+    song.src = file; // sets the source of the song element
 
-    //var song = document.getElementById(name);
+    // a bunch of commented out code related to the visualizer and normalization
+
     //var src = audioCtx.createMediaElementSource(song);
     //var gainNode = audioCtx.createGain();
     /*if (userSettings['normalizeVolume']) {
@@ -144,6 +149,7 @@ async function playSongFromFile(file) {
     nowPlaying['startTime'] = Date.now();
     //nowPlaying['song']['index'] = songs['All Songs']['songs'].indexOf(songData)
 
+    // sets information display content
     document.getElementById('now-playing').classList.remove('no-song')
     document.getElementById('song-info-art').src = songData[0]['picture']
     //document.getElementById('song-info-art').src = songs[songData[0]['album']]['albumArt']
@@ -165,6 +171,11 @@ async function playSongFromFile(file) {
     updateRPC();
 }
 
+
+// creates an HTML string that can be added to a table body that acts as a song entry.
+// should probably add some config to this so it can be used in other places, but it should also be fast too.
+// currently assumes clicking it should play the song, but that might not be the best idea
+// should probably also accept song data directly, or have it accept both
 async function createSongListEntryFromSongData(fileLocation, extraCode) {
     let data = await getSongData(fileLocation);
     let songData = data[0];

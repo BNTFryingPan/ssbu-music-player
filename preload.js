@@ -4,6 +4,7 @@ const { contextBridge, ipcRenderer } = require("electron")
 const mm = require("music-metadata")
 console.log("")
 window.Bridge = {
+    IP: "null",
     songs: {
         "All Songs": {
             "albumArt": "./assets/all-album.png",
@@ -32,3 +33,5 @@ ipcRenderer.invoke("songs:getSongList").then((value) => {
     window.Bridge.songs = value
     //console.log(value)
 })
+
+ipcRenderer.invoke("wss:getIp").then((value) => {window.Bridge.IP = value})
