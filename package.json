@@ -1,16 +1,34 @@
 {
     "name": "ssbu-music-player",
-    "version": "0.4.3-pre1",
+    "version": "0.4.3-pre3",
     "description": "A music player that looks like 'Sounds' in 'Vault' in SSBU",
     "main": "main.js",
-    "resolveSourceMapLocations": [
-        "${workspaceFolder}/**",
-        "!**/node_modules/**"
+    "author": "TheDerpyMemeSquad",
+    "license": "CC0-1.0",
+    "keywords": [
+        "Electron",
+        "music",
+        "ssbu",
+        "songs"
     ],
     "publish": {
         "provider": "github",
         "releaseType": "release"
     },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/leotomasmc/ssbu-music-player"
+    },
+    "scripts": {
+        "start": "electron .",
+        "pack": "electron-builder --dir",
+        "dist": "electron-builder",
+        "release": "electron-builder --win -p always"
+    },
+    "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+    ],
     "build": {
         "appId": "io.github.leotomas.ssbu-music-player",
         "publish": [
@@ -33,24 +51,6 @@
         },
         "icon": "icon.png"
     },
-    "scripts": {
-        "start": "electron .",
-        "pack": "electron-builder --dir",
-        "dist": "electron-builder",
-        "release": "electron-builder --win -p always"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/leotomasmc/ssbu-music-player"
-    },
-    "keywords": [
-        "Electron",
-        "music",
-        "ssbu",
-        "songs"
-    ],
-    "author": "TheDerpyMemeSquad",
-    "license": "CC0-1.0",
     "devDependencies": {
         "electron": "^10.1.3",
         "electron-builder": "^22.8.1"
