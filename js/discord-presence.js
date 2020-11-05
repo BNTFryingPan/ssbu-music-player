@@ -80,6 +80,7 @@ function formatPresenceString(str) {
 }
 
 function updateRPC() { // updates the discord status by sending a request to the main process
+    if (userSettings["discord"]["enableRPC"] == false) { return false }
     if (nowPlaying['song']['data'] == null) {
         ipcRenderer.send("rpc:setactivity", {details: "Idle ⏹️", state: nowPlaying['currentPage']});
     } else {
