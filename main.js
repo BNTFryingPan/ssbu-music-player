@@ -207,7 +207,7 @@ async function createWindow () {
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: true,
-            //enableRemoteModule: true,
+            enableRemoteModule: true,
             //webSecurity: false // only ever disabled for testing purposes. a build will never intentionally be released with webSecurity disabled
         },
         //backgroundColor: '#44444444',

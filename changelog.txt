@@ -1,3 +1,6 @@
+v0.4.3.1
+renabled remote module because it broke things lol (will fix later)
+
 v0.4.3
 (this changelog does not include changes from v0.4.3-pre3, so you should also read that)
 slightly changed the file folder format
