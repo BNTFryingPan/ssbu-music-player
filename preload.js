@@ -34,4 +34,4 @@ ipcRenderer.invoke("songs:getSongList").then((value) => {
     //console.log(value)
 })
 
-ipcRenderer.invoke("wss:getIp").then((value) => {window.Bridge.IP = value})
+//ipcRenderer.invoke("wss:getIp").then((value) => {window.Bridge.IP = value})

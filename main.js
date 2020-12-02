@@ -1,4 +1,7 @@
 
+//console.time("startup");
+//console.time("interactable");
+
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
@@ -51,10 +54,30 @@ log("registering handlers and listeners...")
 
 ipcMain.on("console:getlogs", (e) => {
     //console.log("sending logs to browser window")
+    //console.timeEnd("interactable")
     for (let msg in logQueue) {
         mainWindow.webContents.send("console:log", logQueue[msg]);
         delete logQueue[msg];
     }
+
+    mainWindow.setThumbarButtons([
+        {
+            tooltip: 'Previous Song',
+            icon: path.join(__dirname, "assets/play.png"),
+            flags: ["disabled"],
+            click () { keybind_prev() }
+        },
+        {
+            tooltip: 'Pause/Play',
+            icon: path.join(__dirname, "assets/play.png"),
+            click () { keybind_pauseplay() }
+        },
+        {
+            tooltip: 'Next Song',
+            icon: path.join(__dirname, "assets/skip.png"),
+            click () { keybind_next() }
+        }
+    ])
 }) 
 
 // sends the song list to the browser window when requested to
@@ -89,8 +112,43 @@ ipcMain.on("rpc:setactivity", (e, activity) => {
     } else {
         rpcCache = activity;
     }
-    
 })
+
+async function startRPC() {
+    log("setting up discord rpc...")
+
+    DiscordRPC.register(clientID);
+    rpc = new DiscordRPC.Client({ transport: 'ipc' });
+    global.rpc = rpc
+
+    rpc.on('ready', () => {
+        rpcReady = true
+    
+        if (rpcCache !== null) { // if the browser tried setting a status before RPC was ready, we store it, and set it when RPC is actually ready
+            rpc.setActivity(rpcCache);
+            rpcCache = null;
+        } else {
+            rpc.setActivity({"state": "idle"})
+        }
+        //setInterval(() => {updateRPC()}, 15e3);
+    })
+    
+    rpc.on('error', (e) => {
+        log(e)
+    })
+
+    rpc.login({ clientId: clientID }).then(() => {
+        rpc.subscribe('ACTIVITY_JOIN', ({ secret }) => {
+            log(secret);
+            startWSInstance(secret);
+            
+        })
+        
+        rpc.subscribe('ACTIVITY_JOIN_REQUEST', (user) => {
+            log(user)
+        })
+    }).catch(console.error);
+}
 
 log("registering all functions...")
 
@@ -133,6 +191,8 @@ function getVibrancySettings() {
     // if not on OSX, this setting is just ignored at that point
 }
 
+var twitchOauthWindow = null;
+
 async function createWindow () {
     // Create the browser window.
     log("creating browser window...")
@@ -147,7 +207,7 @@ async function createWindow () {
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: true,
-            enableRemoteModule: true,
+            //enableRemoteModule: true,
             //webSecurity: false // only ever disabled for testing purposes. a build will never intentionally be released with webSecurity disabled
         },
         //backgroundColor: '#44444444',
@@ -186,43 +246,17 @@ async function createWindow () {
         }
     })
     mainWindow.webContents.on('new-window', (e, url) => {
-        if(url != mainWindow.webContents.getURL()) {
+        if(url != mainWindow.webContents.getURL() && !url.startsWith("https://id.twitch.tv")) {
             e.preventDefault()
             require('electron').shell.openExternal(url)
         }
-    })
 
-    log("setting up discord rpc...")
-
-    DiscordRPC.register(clientID);
-    rpc = new DiscordRPC.Client({ transport: 'ipc' });
-    global.rpc = rpc
-
-    rpc.on('ready', () => {
-        rpcReady = true
-    
-        if (rpcCache !== null) { // if the browser tried setting a status before RPC was ready, we store it, and set it when RPC is actually ready
-            rpc.setActivity(rpcCache);
-            rpcCache = null;
-        } else {
-            rpc.setActivity({"state": "idle"})
+        if (url.startsWith("https://id.twitch.tv")) {
+            console.log(e)
         }
-        //setInterval(() => {updateRPC()}, 15e3);
     })
-    
-    rpc.on('error', (e) => log(e))
 
-    rpc.login({ clientId: clientID }).then(() => {
-        rpc.subscribe('ACTIVITY_JOIN', ({ secret }) => {
-            log(secret);
-            startWSInstance(secret);
-            
-        })
-        
-        rpc.subscribe('ACTIVITY_JOIN_REQUEST', (user) => {
-            log(user)
-        })
-    }).catch(console.error);
+    startRPC()
 
     log("registering media key handlers...")
     // registers global shortcut handlers for media keys on the keyboard
@@ -255,15 +289,18 @@ app.on('ready', async () => {log("application ready, preparing to create window.
 app.on('window-all-closed', function () {
     // On macOS it is common for applications and their menu bar
     // to stay active until the user quits explicitly with Cmd + Q
+    // disabled because idc about how mac works differently and because
+    // it doesnt currently support reopening the main window or running
+    // in the background (while closed)
     //if (process.platform !== 'darwin') app.quit()
     app.quit();
 })
 
-app.on('activate', function () {
+/*app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
     if (mainWindow === null) createWindow()
-})
+})*/
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
@@ -291,3 +328,4 @@ ipcMain.on('trGradient', (_) => {
 });
 */
 log("Finished main file sequence.")
+//console.timeEnd("startup")

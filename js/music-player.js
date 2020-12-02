@@ -18,7 +18,11 @@ var nowPlaying = {
     "shuffleSource": {type:"album",name:"All Songs"},
     "shuffleMode": "shuffleall", // shuffleall, loop, order, shufflealbum
     "rawNormalizationGain": 1,
-    "startTime": Date.now(),
+    "startTime": {
+        "application": Date.now(),
+        "source": Date.now(),
+        "song": Date.now()
+    },
     "currentPage": "none",
     "isDevelopmentBuild": false,
 };
@@ -39,7 +43,7 @@ function updateCurrentShuffleSource(newSource) {
         } else updated = "no playlist"
     }
     console.log("updated shuffle source: " + updated)
-    console.log(newSource)
+    if (updated == "success") {nowPlaying["startTime"]["source"] = Date.now()}
 }
 
 function getCurrentShuffleSource() {
@@ -66,6 +70,7 @@ var userSettings = {
         "smallImageText": "{player.state} | {player.version}",
         "details": "{song.album}",
         "state": "{song.title} {player.icons} {player.loops}",
+        "startTimestampMode": "song", // possible values: song, source, application
     }
 }
 
@@ -88,10 +93,10 @@ function randomSong() {
     
     if (src["type"] == "album") {
         var randomSongIndex = parseInt(Math.random() * src['src']['songFilePaths'].length);
-        return {"data": src['src']['songs'][src['src']['songFilePaths'][randomSongIndex]], "index": randomSongIndex, "file": src['src']['songFilePaths'][randomSongIndex]};
+        return {"data": src['src']['songs'][src['src']['songFilePaths'][randomSongIndex]], "index": randomSongIndex, "file": src['src']['songFilePaths'][randomSongIndex], "type":"local-file"};
     } else if (src['type'] == "playlist") {
         let rsong = src['src']['songs'][parseInt(Math.random() * src['src']['songs'].length)];
-        return {"data": getSongData(rsong["dir"]), "index": 0, "file": rsong["dir"]}
+        return {"data": getSongData(rsong["dir"]), "index": 0, "file": rsong["dir"], "type":"local-file"}
     }
     
 }
@@ -105,18 +110,22 @@ function pauseSong(state) {
     if (state == true || state == false) {
         if (state) {
             document.getElementById('song').pause()
-            nowPlaying['playbackState'] = "Paused"
+            nowPlaying['playbackState'] = "Paused";
+            dispatchEvent("PLAYERSTATECHANGE", {"paused": true})
         } else {
             document.getElementById('song').play()
             nowPlaying['playbackState'] = "Playing"
+            dispatchEvent("PLAYERSTATECHANGE", {"paused": false})
         }
     } else {
         if (document.getElementById('song').paused) {
             document.getElementById('song').play()
             nowPlaying['playbackState'] = "Playing"
+            dispatchEvent("PLAYERSTATECHANGE", {"paused": false})
         } else {
             document.getElementById('song').pause()
             nowPlaying['playbackState'] = "Paused"
+            dispatchEvent("PLAYERSTATECHANGE", {"paused": true})
         }
     }
     updateRPC()
@@ -179,6 +188,7 @@ function prevSong(notif) {
 }
 
 function shuffleSongs() {
+    let previousState = "" + nowPlaying["shuffleMode"];
     if (nowPlaying['shuffleMode'] == "loop") {
         nowPlaying["shuffleMode"] = "shuffleall";
     } else if (nowPlaying['shuffleMode'] == "shuffleall") {
@@ -190,6 +200,7 @@ function shuffleSongs() {
     }
 
     updateShuffleModeText()
+    dispatchEvent("SHUFFLEMODECHANGE", {"previous": previousState, "new": nowPlaying["shuffleMode"]})
 }
 
 var isChangingSong = false;

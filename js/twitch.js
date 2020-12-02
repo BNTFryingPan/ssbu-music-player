@@ -1,6 +1,6 @@
 const irc = require('dank-twitch-irc');
 //const remote = require('electron').remote;
-const {BrowserWindow} = require('electron');
+//const {BrowserWindow} = require('electron');
 const ytdl = require("ytdl-core")
 
 /*module.exports = {
@@ -84,7 +84,9 @@ function updateTwitchSrPerms() {
 }
 
 function sendNewSongPlayingMessage(song, extra) {
-    if (bot.ready) {
+    //console.log(song)
+    //console.log(getSongMessage(song))
+    if (bot.ready && document.getElementById("s-t-o-newsongmessage").checked) {
         extra = extra || ""
         song = song || nowPlaying[song]
         bot.say(tch, extra + getSongMessage(song))
@@ -104,27 +106,33 @@ function getSongMessage(song) {
 }
 
 function startTwitchIntegration() {
-    if (readyToJoinChat) {
+    if (readyToJoinChat && document.getElementById("s-t-channel").value != "") {
+        twitchOauthData["channel_to_join"] = document.getElementById("s-t-channel").value
+        tch = twitchOauthData["channel_to_join"].toLowerCase()
         bot = new irc.ChatClient({
-            username: "thederpymemebot",
+            username: "thederpymemebot", // hardcoded for now /shrug
             password: "oauth:" + twitchOauthData["access_token"]
         })
         bot.on("PRIVMSG", msg => {
             console.log(msg)
             var userPermissionLevel = 1;
 
-            if (msg.badges.hasModerator || msg.badges.hasBroadcaster) {
-                userPermissionLevel += 8;
+            if (msg.badges.hasSubscriber) {
+                userPermissionLevel += 2;
             }
             if (msg.badges.hasVIP) {
                 userPermissionLevel += 4;
             }
-            if (msg.badges.hasSubscriber) {
-                userPermissionLevel += 2;
+            if (msg.badges.hasModerator) {
+                userPermissionLevel += 8;
             }
-            //console.log(`[#${msg.channelName}] ${msg.displayName}: ${msg.messageText}`);
+            if (msg.badges.hasBroadcaster) {
+                userPermissionLevel += 16
+            }
             
-            if (msg.messageText.startsWith("!sr") || msg.messageText.startsWith("!songrequest")) {
+            console.log(`[#${msg.channelName}] ${msg.displayName}: ${msg.messageText}`);
+            
+            /*if (msg.messageText.startsWith("!sr") || msg.messageText.startsWith("!songrequest")) {
                 if (userPermissionLevel >= permissions['sr']) {
                     var args = msg.messageText.split(" ");
                 
@@ -133,26 +141,60 @@ function startTwitchIntegration() {
                 } else {
                     bot.whisper(msg.username, "Hey. Sorry, but you can't use song request!")
                 }
-            } else if (msg.messageText.startsWith("!song")) {
+            } else*/ 
+            if (msg.messageText.startsWith("!song")) {
                 var nowPlayingMessage = "Now Playing: ";
 
                 if (nowPlaying['song']['type'] == "local-file") {
                     nowPlayingMessage += nowPlaying['song']['data'][0]['title'] + " from " + nowPlaying['song']['data'][0]['album'] + " by " + nowPlaying['song']['data'][0]['artist'] + " from a file."
                 } else if (nowPlaying['song']['type'] == "yt") {
-
+                    nowPlayingMessage += "Something on YouTube."
                 }
 
                 bot.say(tch, nowPlayingMessage)
+            } else if (msg.messageText.startsWith("!source") || msg.messageText.startsWith("!album") || msg.messageText.startsWith("!playlist") || msg.messageText.startsWith("!pl")) {
+                if (nowPlaying["shuffleMode"] == "shuffleall") {
+                    bot.say(tch, "Currently shuffling from all songs!")
+                } else if (nowPlaying["shuffleMode"] == "shufflesource") {
+                    bot.say(tch, "Currently shuffling from " + nowPlaying["shuffleSource"]["type"] + " named '" + nowPlaying["shuffleSource"]["name"] + "'.")
+                } else if (nowPlaying["shuffleMode"] == "loop") {
+                    bot.say(tch, "Currently looping " + nowPlaying["song"]["data"][0]["title"] + ".")
+                } else if (nowPlaying["shuffleMode"] == "order") {
+                    bot.say(tch, "Currently playing songs in order from " + nowPlaying["shuffleSource"]["type"] + " named '" + nowPlaying["shuffleSource"]["name"] + "'.")
+                }
+            } else if (msg.messageText.startsWith("!ver")) {
+                bot.say(tch, "Currently running Smash Music Player " + document.getElementById("version-display").innerHTML)
             } else if (userPermissionLevel >= permissions['fullControl']) {
                 if (msg.messageText.startsWith("!skip") || msg.messageText.startsWith("!nextsong")) {
                     nextSong();
                     sendNewSongPlayingMessage("Skipped song. Now Playing " + nowPlaying['song']['data'][0]['title'] + " from " + nowPlaying['song']['data'][0]['album'] + " by " + nowPlaying['song']['data'][0]['artist'] + " from a file.");
                 }
             }
+            dispatchEvent("T-PRIVMSG", msg)
         })
-        bot.on("WHISPER", msg => {console.log(`[DM ${msg.displayName}]: ${msg.messageText}`)});
+        bot.on("close", (err) => {if (err) {console.error(err)}})
+        bot.on("ready", () => {console.log("bot connected!")})
+        bot.on("WHISPER", msg => {
+            console.log(`[#DM ${msg.displayName}]: ${msg.messageText}`);
+            dispatchEvent("T-WHISPER", msg)
+        });
+
+        bot.on("USERNOTICE",      (msg) => {dispatchEvent("T-USERNOTICE", msg)})
+        bot.on("CLEARCHAT",       (msg) => {dispatchEvent("T-CLEARCHAT", msg)})
+        bot.on("CLEARMSG",        (msg) => {dispatchEvent("T-CLEARMSG", msg)})
+        bot.on("HOSTTARGET",      (msg) => {dispatchEvent("T-HOSTTARGET", msg)})
+        bot.on("NOTICE",          (msg) => {dispatchEvent("T-NOTICE", msg)})
+        bot.on("ROOMSTATE",       (msg) => {dispatchEvent("T-ROOMSTATE", msg)})
+        bot.on("USERSTATE",       (msg) => {dispatchEvent("T-USERSTATE", msg)})
+        bot.on("GLOBALUSERSTATE", (msg) => {dispatchEvent("T-GLOBALUSERSTATE", msg)})
+        bot.on("JOIN",            (msg) => {dispatchEvent("T-JOIN", msg)})
+        bot.on("PART",            (msg) => {dispatchEvent("T-PART", msg)})
+
+
         bot.connect();
-        bot.join(twitchOauthData["channel_to_join"]);
+        bot.join(tch);
+        document.getElementById("s-t-connect").disabled = true;
+        dispatchEvent("T-INTEGRATIONSTARTED")
         //bot.say(tch, "SSBU Music Player v0.1.2 Song Request bot is now in chat!")
     } else {
         alert("Sign into twitch first!")
@@ -161,26 +203,7 @@ function startTwitchIntegration() {
 
 window.onmessage = function(event){
     if (event.data.startsWith("twitchOauth")) {
-        var dataString = event.data.split('#', 2)[1]
-        //console.log(typeof(event.data))
-        //console.log(event.data.split('#',2))
-        var data = {};
-
-        var dataEntries = dataString.split("&");
-        for (var ent in dataEntries) {
-            var entName = dataEntries[ent].split('=')[0];
-            var entValue = dataEntries[ent].split('=', 2)[1]
-            //console.log(entName + ":" + entValue)
-            data[entName] = entValue
-        }
-        console.log(data)
-        twitchOauthData = data;
-        tch = data['channel_to_join']
-
-        //twitchUserData = getJson("https://api.twitch.tv/helix/users?" + "")
-
-
-        readyToJoinChat = true;
+        
     }
 }
 
@@ -199,7 +222,7 @@ function getUserDataFromToken(url, callback, token) {
       }
     };
     xhr.send();
-};
+}
 
 function generateTwitchOauthURL() {
     var url = "https://id.twitch.tv/oauth2/authorize";
@@ -213,19 +236,34 @@ function generateTwitchOauthURL() {
 }
 
 function beginTwitchOauthFlow() {
-    //var url = "https://id.twitch.tv/oauth2/authorize?client_id=9yyejeel2lb0vfny41fs535r1jesg2&redirect_uri=https://leotomasmc.github.io/ssbu-music-player/auth.html&response_type=token&force_verify=true";
-    var title = "Twitch OAuth 2.0 Authentication"
+    var title = "Login With Twitch";
     oauth = window.open(generateTwitchOauthURL(), title, "frame=yes,autoHideMenuBar=yes");
-    //oauth = window.open("file:///Z:/development/projects/gh/ssbu-music-player/auth.html#access_token=exampleToken12345&scope=chat%3Aedit+chat%3Aread+channel%3Aread%3Asubscriptions+whispers%3Aedit&token_type=bearer", title, "frame=yes,autoHideMenuBar=yes");
+    document.getElementById("s-t-getoauth").disabled = false;
 }
 
-function getTwitchOauthData(dataString) {
+function getTwitchOauthFromPopup() {
+    if (oauth.location.hash.startsWith("#")) {
+        let data = {};
+        let dataEntries = oauth.location.hash.split('#', 2)[1].split("&");
+
+        for (let ent in dataEntries) {
+            let entName = dataEntries[ent].split('=')[0];
+            let entValue = dataEntries[ent].split('=', 2)[1]
+            data[entName] = entValue
+        }
+        
+        twitchOauthData = data;
+        readyToJoinChat = true;
+        document.getElementById("s-t-connect").disabled = false;
+        document.getElementById("s-t-getoauth").disabled = true;
+        document.getElementById("s-t-login").disabled = true;
+    }
     
 }
 
-function onEvent(eventType, content) {
+//function onEvent(eventType, content) {
 
-}
+//}
 
 /*
 https://id.twitch.tv/oauth2/authorize?client_id=9yyejeel2lb0vfny41fs535r1jesg2&redirect_uri=https://leotomasmc.github.io/ssbumpauth&response_type=token

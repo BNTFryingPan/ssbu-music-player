@@ -1,6 +1,6 @@
 {
     "name": "ssbu-music-player",
-    "version": "0.4.3-pre3",
+    "version": "0.4.3",
     "description": "A music player that looks like 'Sounds' in 'Vault' in SSBU",
     "main": "main.js",
     "author": "TheDerpyMemeSquad",
@@ -52,7 +52,7 @@
         "icon": "icon.png"
     },
     "devDependencies": {
-        "electron": "^10.1.3",
+        "electron": "10.1.3",
         "electron-builder": "^22.8.1"
     },
     "dependencies": {
@@ -68,6 +68,8 @@
         "music-metadata": "^7.4.0",
         "platform-folders": "^0.4.1",
         "rangeslider.js": "^2.3.3",
+        "twitch": "^4.3.2",
+        "twitch-electron-auth-provider": "^4.3.2",
         "websocket-stream": "^5.5.2",
         "ws": "^7.3.1",
         "ytdl-core": "^1.0.3"

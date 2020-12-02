@@ -12,7 +12,8 @@
     
     <body>
         <h1>Almost Done!</h1>
-        <p>
+        Go back to the main window, and click the "Get oauth from popup" button, and then you can close this window.
+        <!--<p>
             Please enter the following information<br>
             <br>
             Channel to join: <input type="text" id="channel-name"><br>
@@ -26,11 +27,11 @@
                 var data = window.location.hash;
                 data += "&channel_to_join=" + document.getElementById("channel-name").value;
                 if (window.location.hash.startsWith("#")) {
-                    window.opener.postMessage("twitchOauth" + data);
+                    window.opener.postMessage("twitchOauth" + data, "*");
                 } else {
-                    window.opener.postMessage("twitchOauth#" + data);
+                    window.opener.postMessage("twitchOauth#" + data, "*");
                 }
             }
-        </script>
+        </script>-->
     </body>
 </html>

@@ -42,7 +42,7 @@ async function createSongPlaylistEntryFromSongData(fileLocation, extraCode) {
     let songData = data[0];
     let metaData = data[1];
     
-    return "<tr onclick=\"playSongFromFile('" + fileLocation.replaceAll("'", "\\'") + "');" + extraCode + "\"><td></td><td>" + songData['track']['no'] + "</td><td>" + songData['title'] + "</td><td>" + songData['album'] + "</td><td>" + songData['duration'] +  "</td></tr>"
+    return "<tr data-songLocation='" + fileLocation + "' onclick=\"playSongFromFile('" + fileLocation.replaceAll("'", "\\'") + "');" + extraCode + "\"><td></td><td>" + songData['track']['no'] + "</td><td>" + songData['title'] + "</td><td>" + songData['album'] + "</td><td>" + songData['duration'] +  "</td></tr>"
 }
 
 async function createSongPlaylistEntry(plSong) {
@@ -67,6 +67,8 @@ async function openPlaylist(playlistName) {
     document.getElementById('body').setAttribute('data-currentLayer', "playlist-song-list")
     document.getElementById('playlist-list').style.display = "none"
     document.getElementById('pl-song-list').style.display = "block"
+    updatePlayingSongInSongLists();
+    dispatchEvent("OPENPLAYLIST", {"name": playlistName})
 }
 
 async function loadPlaylists() {

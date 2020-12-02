@@ -36,7 +36,8 @@ global.songs = {
         "duration": 0,
         "songCount": 0,
         "songs": {},
-        "songFilePaths": []
+        "songFilePaths": [],
+        "sortedPaths": []
     },
     "Other": {
         "albumArt": './assets/other-album.png',
@@ -46,9 +47,34 @@ global.songs = {
         "duration": 0,
         "songCount": 0,
         "songs": {},
-        "songFilePaths": []
+        "songFilePaths": [],
+        "sortedPaths": [],
+        "listOfAlbums": ["Other", "All Songs"]
     }
 }
+
+/*function sortFunc(a, b) {
+    let indxA = a[0]["track"]["no"];
+    let indxB = b[0]["track"]["no"];
+
+    if (indxA == indxB) {
+        if (a[0]["album"] == b[0]["album"]) return 0;
+        else if ([a[0]["album"], b[0]["album"]].sort() == [a[0]["album"], b[0]["album"]]) return -1;
+        else return 1;
+    }
+    else if (indxA < indxB) return -1;
+    else return 1
+}
+
+function sortAlbum(name) {
+    global.songs[name] = .sort(sortFunc)
+}
+
+function sortAllAlbums() {
+    for (let alb in global.songs["Other"]["listOfAlbums"]) {
+        sortAlbum(global.songs["Other"]["listOfAlbums"][alb])
+    }
+}*/
 
 function getSongImage(song) {
     let picture = song[0]['picture']
@@ -100,18 +126,21 @@ async function getSongData(fileName) {
     return [songData, metaData];
 }
 
-async function loadSongsFromFolder(directory, recursive) {
+async function loadSongsFromFolder(directory, recursive, onlySubFolders) {
+    log("[Songs] loading songs from " + directory + (recursive ? " recursively" : ""))
+    //if (!shouldReadFolder(directory)) {return true}
     recursive = recursive || true;
     directory = directory.replace(/\\/g, "/");
     var files = fs.readdirSync(directory)
     for (var f in files) {
         if (files[f].split('.').length == 1 && recursive) {
             try {
-                loadSongsFromFolder(directory + "/" + files[f])
+                if (shouldReadFolder(directory + "/" + files[f])) loadSongsFromFolder(directory + "/" + files[f])
+                else {log("[Songs] skipping " + directory + "/" + files[f])}
             } catch (error) {
                 console.warn(files[f] + " doesnt have file extension, but isnt folder either!")
             }
-        } else if (files[f].endsWith('.mp3') || files[f].endsWith('.ogg') || files[f].endsWith(".wav") || files[f].endsWith(".flac")) {
+        } else if (!onlySubFolders && (files[f].endsWith('.mp3') || files[f].endsWith('.ogg') || files[f].endsWith(".wav") || files[f].endsWith(".flac"))) {
             var thisSong = await getSongData(directory + "/" + files[f]);
             if (!(global.songs[thisSong[0]['album']])) {
                 global.songs[thisSong[0]['album']] = {
@@ -151,6 +180,10 @@ async function loadSongsFromFolder(directory, recursive) {
             } else {
                 thisSong[0]['picture'] = "./assets/unknown.png";
             }
+
+            if (!global.songs["Other"]["listOfAlbums"].includes(thisSong[0]['album'])) {
+                global.songs["Other"]["listOfAlbums"].push(thisSong[0]['album'])
+            }
         } //else if (files[f] == ".ssbu-music") {
             //parseFolderDataFile(files[f])
         //}
@@ -159,8 +192,20 @@ async function loadSongsFromFolder(directory, recursive) {
     //hasLoadedSongs = true;
 }
 
+function shouldReadFolder(path) {
+    log("[Songs] checking " + path)
+    if (fs.existsSync(platFolders.getMusicFolder() + "/folders.ssbu-music")) {
+        let file = fs.readFileSync(platFolders.getMusicFolder() + "/folders.ssbu-music", {encoding: "utf-8"})
+        file = file.replace(/\\/g, "/");
+        let folders = file.split(/\r?\n/);
+
+        if (folders.includes("~" + path)) return false;
+    }
+    return true;
+}
+
 function skipFolder(path) {
-    let symbols = ['!', '#', '//', '-', '$']
+    let symbols = ['!', '#', '//', '-', '$', "~"]
     for (sym in symbols) {
         if (path.startsWith(symbols[sym])) {
             return true
@@ -171,11 +216,12 @@ function skipFolder(path) {
 
 async function loadSongsFromMusicFolder() {
     //debugger
+    log("[Songs] Loading songs from all folders")
     await loadSongsFromFolder(platFolders.getMusicFolder());
     //await loadSongsFromFolder(platFolders.getMusicFolder()).then(loadAlbums());
     if (fs.existsSync(platFolders.getMusicFolder() + "/folders.ssbu-music")) {
         let file = fs.readFileSync(platFolders.getMusicFolder() + "/folders.ssbu-music", {encoding: "utf-8"})
-        let folders = file.split("\r\n")
+        let folders = file.split(/\r?\n/)
         for (f in folders) {
             if (fs.existsSync(folders[f]) && !skipFolder(folders[f])) {
                 if (folders[f].startsWith("%")) {

@@ -17,10 +17,11 @@ async function openAlbum(albumName) {
     if (nowPlaying['openedAlbum'] != albumName) {
         let updatedHTML = "";
         for (song in songs[albumName]["songs"]) {
-            updatedHTML += await createSongListEntryFromSongData(songs[albumName]['songs'][song][0]['fileLocation'], "updateCurrentShuffleSource({type:'album',name:'" + albumName + "'})");
+            updatedHTML += await createSongListEntryFromSongData(songs[albumName]['songs'][song][0]['fileLocation'], "updateCurrentShuffleSource({type:'album',name:'" + albumName + "'})", albumName == "All Songs");
         }
 
         document.getElementById('song-list-tbody').innerHTML = updatedHTML;
+        updatePlayingSongInSongLists();
         hideAlbumLayer()
     } else {
         hideAlbumLayer()
@@ -31,6 +32,7 @@ async function openAlbum(albumName) {
     //document.querySelector("#album-info-header-thing ::before").style.content = fancyTimeFormat(songs[albumName]['duration'])
 
     setTimeout(updateScrollbar, 0);
+    dispatchEvent("OPENALBUM", {"name": albumName})
 }
 
 async function loadAlbums() {

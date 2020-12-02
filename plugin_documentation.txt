@@ -1,0 +1,79 @@
+Plugins are written using Javascript. You are expected to have a basic understanding of programming in JS before creating plugins.
+
+Here is the code for a template render plugin that you can simply add to with your own features
+
+```
+const __about__ = {
+    "version": "1",
+    "name": "name",
+    "author": "author"
+}
+
+function onLoad(version) { // called when the player loads the plugins
+    console.log("plugin loaded in player version " + version)
+}
+
+function onEnable() { // called when the plugin is actually enabled after load or when the user enables it after they disable it
+    console.log("plugin enabled")
+}
+
+function onDisable() { // called when the plugin is disabled by the user (not when unloading [yet?]!)
+    console.log("plugin disabled")
+}
+
+function onEvent(name, data) {
+    console.log("event " + name + " was called with: " + data)
+}
+
+module.exports = {
+    load: onLoad,
+    event: onEvent,
+    enable: onEnable,
+    disable: onDisable,
+    about: __about__,
+    enableOnLoad: true // if false, the plugin will not be enabled when the player loads it, instead the user must enable it manually
+}
+```
+
+render plugins use the file extension .r.js and main process plugins (which are not implemented yet) will use .m.js
+
+# Events
+Here is a list of currently implemented events (there will be more in the future)
+
+Event Name              - Data Type -    - Info
+                                  Cancelable
+    General player events
+PLAYSONG                - Object    - No - Called when a new song is played
+SONGINFOVISIBLECHANGE   - Object    - No - Called when the user toggles the song info modal
+MAINMENUVISIBLECHANGE   - Object    - No - Called when the main menu is shown or hidden
+OPENSERVICESMENU        - None      - No - Called when the user opens the services menu
+OPENPLAYLISTMENU        - None      - No - Called when the user opens the playlist menu
+OPENSETTINGSMENU        - None      - No - Called when the user opens the settings menu
+CLOSESETTINGSMENU       - None      - No - Called when the user closes the settings menu
+OPENMUSICMENU           - None      - No - Called when the user opens the music menu
+OPENALBUM               - Object    - No - Called when the user opens an album
+OPENPLAYLIST            - Object    - No - Called when the user opens a playlists
+
+    Window events
+W-TITLECHANGE           - Object    - No - Called when the window title is updated
+W-MIN                   - None      - No - Called when the user minimizes the window
+W-MAXRES                - None      - No - Called when the user clicks the maximize or restore button
+
+    Twitch integration events
+T-INTEGRATIONSTARTED    - None      - No - Called when the user enables twitch integration
+T-PRIVMSG               - Message   - No - Called when a message is recieved in twitch chat. See https://robotty.github.io/dank-twitch-irc/#available-client-events
+T-WHISPER               - Message   - No - Called when a message is recieved in twitch whispers. See https://robotty.github.io/dank-twitch-irc/#available-client-events
+T-USERNOTICE            - Message   - No - See https://robotty.github.io/dank-twitch-irc/#available-client-events
+T-CLEARCHAT             - Message   - No - See https://robotty.github.io/dank-twitch-irc/#available-client-events
+T-CLEARMSG              - Message   - No - See https://robotty.github.io/dank-twitch-irc/#available-client-events
+T-HOSTTARGET            - Message   - No - See https://robotty.github.io/dank-twitch-irc/#available-client-events
+T-NOTICE                - Message   - No - See https://robotty.github.io/dank-twitch-irc/#available-client-events
+T-ROOMSTATE             - Message   - No - See https://robotty.github.io/dank-twitch-irc/#available-client-events
+T-USERSTATE             - Message   - No - See https://robotty.github.io/dank-twitch-irc/#available-client-events
+T-GLOBALUSERSTATE       - Message   - No - See https://robotty.github.io/dank-twitch-irc/#available-client-events
+T-JOIN                  - Message   - No - See https://robotty.github.io/dank-twitch-irc/#available-client-events
+T-PART                  - Message   - No - See https://robotty.github.io/dank-twitch-irc/#available-client-events
+
+you can create your own functions in the plugin that will be called from your onEvent function which you may find easier to organize.
+if you include anything extra in your module.exports, other plugins can access that if the user has multiple plugins installed.
+you can check if a user has certian other plugins installed and also if they are enabled or not

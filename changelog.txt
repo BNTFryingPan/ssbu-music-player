@@ -1,4 +1,29 @@
 v0.4.3
+(this changelog does not include changes from v0.4.3-pre3, so you should also read that)
+slightly changed the file folder format
+    '~' now tells the player to ignore that folder
+        useful for if you want to ignore duplicate folders or a folder of songs that are just in a different format
+    internally, ~ is considered a comment, so you can theoretically use it as long as it doesnt match a folder name
+        just dont use it for comments because it is not supported
+new discord rpc option: timestamp mode
+    "application" will show the amount of time the player has been open
+    "source" will show the amount of time the player has been on a certian source
+    "song" will show the amount of time the player has been playing the current song (this is how it has been)
+the currently playing song will be highlighted in the song list (no matter where it is), and will have an orange
+    playing mark and accent when hovered over (instead of blue). it looks kinda bad, but it will be better later
+no longer asks about firewall on startup (because thats sus). was caused by the websocket server that will be used
+    for discord listening parties
+added "thumbar" buttons on windows under the window preview when you put your mouse over the application icon in the
+    taskbar. currently only pause/play and next song work, and the previous song button is disabled and has the
+    wrong icon because i dont have a previous icon (in the player, i just flip the next song icon)
+updated the login flow for twitch because it stopped working for some reason (even though i changed nothing lol)
+    also added a checkbox for if the player should send new song messages in chat
+started working on support for plugins written in javascript, check the plugin_documentation.txt for what docs i
+    have written so far, but it is no where near complete yet (the support for plugins or the docs)
+    there is also now a plugin menu in the services menu that lists what render plugins are currently running and
+        allows you to turn plugins on and off without restarting the player and messing with files
+
+v0.4.3-pre3
 i forgot to update the application icon in 0.4.2 so i did that.
 you can now create and add songs to playlists
     the add to playlist menu is very jank right now, but i will improve it later

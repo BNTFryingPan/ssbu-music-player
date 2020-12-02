@@ -1,23 +1,45 @@
+.song-list-tbody > .playing {
+    /* background-color: rgba(255, 255, 255, 0.199); */
+    background-image: linear-gradient(0deg, #fff0 0%,  #fff3 50%, #fff0 100%);
+    color: #ddd;
+}
+
+.song-list-tbody > .playing > :first-child {
+    opacity: 1;
+    color: #e0970f;
+    font-family: "Segoe MDL2 Assets"
+}
+
+.song-list-tbody > .playing:hover > td {
+    color: #e0970f;
+}
+
+.song-list-tbody > .playing:hover {
+    background-image: linear-gradient(0deg, #e0970f 5%, #00000000 6%, #fff3 50%, #fff0 100%);
+    /* border-bottom-width: 0px; */
+}
+
 .song-list-t {
     width: 100%;
     text-align: left;
     padding: 0;
+    border-spacing: 0;
 }
 
-.song-list-t > tbody {
+.song-list-tbody {
     padding: 0;
 }
 
-.song-list-t > tbody > tr, #song-list-t > tbody > tr > td {
+.song-list-tbody > tr, #song-list-t > tbody > tr > td {
     padding: 3px;
     margin: 0px;
 }
 
-.song-list-t > tbody > tr {
+.song-list-tbody > tr {
     width: 100%;
 }
 
-.song-list-t > tbody > tr:hover > td {
+.song-list-tbody > tr:hover > td {
     color: #1C47F6;
 }
 
@@ -31,16 +53,15 @@
     left: 0;
 }*/
 
-.song-list-t > tbody > tr:hover {
+.song-list-tbody > tr:hover {
     background-image: linear-gradient(0deg, #1c47f6 5%, #00000000 6%)
-    
 }
 
-.song-list-t > tbody > tr:hover :first-child {
+/* .song-list-t > tbody > tr:hover > :first-child {
     border-bottom: 0px solid #1C47F6;
-}
+} */
 
-.song-list-t > tbody > tr:hover > :first-child {
+.song-list-tbody > tr:hover > :first-child {
     opacity: 1;
 }
 

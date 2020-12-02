@@ -146,7 +146,7 @@ async function playSongFromFile(file) {
     nowPlaying['currentSource'] = "local-files"
     nowPlaying['song']['type'] = "local-file"
     nowPlaying['song']['data'] = songData;
-    nowPlaying['startTime'] = Date.now();
+    nowPlaying['startTime']["song"] = Date.now();
     //nowPlaying['song']['index'] = songs['All Songs']['songs'].indexOf(songData)
 
     // sets information display content
@@ -168,18 +168,30 @@ async function playSongFromFile(file) {
     nowPlaying['playbackState'] = "Playing"
     seek.max = songData[1].duration;
     seek.value = 0;
+
+    updatePlayingSongInSongLists();
     updateRPC();
+    dispatchEvent("PLAYSONG", {song: songData});
 }
 
+function updatePlayingSongInSongLists() {
+    if (!nowPlaying["song"]["data"]) return;
+    document.querySelectorAll(".song-list-tbody > .playing").forEach((el) => {
+        el.classList.remove("playing")
+    })
+    document.querySelectorAll(".song-list-tbody > tr[data-songlocation=\"" + nowPlaying["song"]["data"][0]["fileLocation"] + "\"]").forEach((el) => {
+        el.classList.add("playing")
+    })
+}
 
 // creates an HTML string that can be added to a table body that acts as a song entry.
 // should probably add some config to this so it can be used in other places, but it should also be fast too.
 // currently assumes clicking it should play the song, but that might not be the best idea
 // should probably also accept song data directly, or have it accept both
-async function createSongListEntryFromSongData(fileLocation, extraCode) {
+async function createSongListEntryFromSongData(fileLocation, extraCode, includeAlbum) {
     let data = await getSongData(fileLocation);
     let songData = data[0];
     let metaData = data[1];
     
-    return "<tr data-songLocation='" + fileLocation + "' onclick=\"playSongFromFile('" + fileLocation.replace("'", "\\'") + "');" + extraCode + "\"><td></td><td>" + songData['track']['no'] + "</td><td>" + songData['title'] + "</td><td>" + songData['duration'] +  "</td></tr>"
+    return "<tr data-songLocation='" + fileLocation + "' onclick=\"playSongFromFile('" + fileLocation.replace("'", "\\'") + "');" + extraCode + "\"><td></td><td>" + songData['track']['no'] + "</td><td>" + songData['title'] + "</td>" + (includeAlbum ? ("<td>" + songData['album'] + "</td>") : "") + "<td>" + songData['duration'] +  "</td></tr>"
 }

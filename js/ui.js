@@ -43,7 +43,9 @@ function updateShuffleModeText() {
 }
 
 function updateTitle(text) {
+    let old = "" + document.getElementById('window-title-text').innerHTML
     document.getElementById('window-title-text').innerHTML = text
+    dispatchEvent("W-TITLECHANGE", {"old": old, "new": text})
 }
 
 function setTopMenuVisible(visibile) {
@@ -67,6 +69,7 @@ function setTopMenuVisible(visibile) {
         document.getElementById('back-button').style.display = "flex";
     }
     setTimeout(updateScrollbar, 0);
+    dispatchEvent("MAINMENUVISIBLECHANGE", {"visible": visibile})
 }
 
 
@@ -83,6 +86,7 @@ function openMusicMenu() {
     nowPlaying['currentPage'] = "Music Page"
     updateTitle("Vault > Sounds > Music")
     setTimeout(updateScrollbar, 0);
+    dispatchEvent("OPENMUSICMENU")
 }
 
 function refreshSongsAndAlbums() {
@@ -99,9 +103,11 @@ function setSettingsOpenState(state) {
         document.getElementById('body').setAttribute('data-settingsOpen', "true")
         document.getElementById('top-settings').style.display = "block";
         nowPlaying['currentPage'] = "Settings"
+        dispatchEvent("OPENSETTINGSMENU")
     } else {
         document.getElementById('body').setAttribute('data-settingsOpen', "false")
         document.getElementById('top-settings').style.display = "none";
+        dispatchEvent("CLOSESETTINGSMENU")
     }
 }
 
@@ -114,6 +120,7 @@ function openPlaylistMenu() {
     nowPlaying['currentPage'] = "Playlists"
     updateTitle("Vault > Sounds > Playlists")
     setTimeout(updateScrollbar, 0);
+    dispatchEvent("OPENPLAYLISTMENU")
 }
 
 function openServicesMenu() {
@@ -125,6 +132,7 @@ function openServicesMenu() {
     nowPlaying['currentPage'] = "Playlists"
     updateTitle("Vault > Sounds > Playlists")
     setTimeout(updateScrollbar, 0);
+    dispatchEvent("OPENSERVICESMENU")
 }
 
 function openFoldersFile() {
@@ -150,6 +158,7 @@ function toggleSongInfoModal(state) {
             document.getElementById('body').setAttribute('data-songInfoOpen', "false")
         }
     }
+    dispatchEvent("SONGINFOVISIBLECHANGE", {"visible": state})
 }
 
 function updateNormalizationState(state) {
@@ -169,6 +178,7 @@ function updateNormalizationState(state) {
 function titlebar_min() {
     let win = remote.getCurrentWindow();
     win.minimize();
+    dispatchEvent("W-MIN")
 }
 
 function titlebar_close() {
@@ -179,6 +189,7 @@ function titlebar_maxres() {
     let win = remote.getCurrentWindow();
     if (win.isMaximized()) win.unmaximize();
     else win.maximize();
+    dispatchEvent("W-MAXRES")
 }
 
 function titlebar_back() {
@@ -235,6 +246,7 @@ function settings_updateCheck() {
 // When document has loaded, initialise
 document.onreadystatechange = () => {
     if (document.readyState == "complete") {
+        //loadRenderPlugins()
         handleWindowControls();
         document.getElementById('min-button').onclick = function() {
             titlebar_min()
@@ -323,6 +335,7 @@ document.onreadystatechange = () => {
         //console.log("after load")
         loadAlbums()
         loadPlaylists()
+        loadRenderPlugins()
     }
 
     updateRPC()

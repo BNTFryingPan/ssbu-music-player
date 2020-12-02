@@ -12,6 +12,8 @@
         <link rel="stylesheet" href="./css/songlist.css">
         <link rel="stylesheet" href="./css/titlebar.css">
         <link rel="stylesheet" href="./css/topmenu.css">
+        <link rel="stylesheet" href="./css/plugins.css">
+
         <script>
             //var audioCtx = new AudioContext();
             //var audioElem;
@@ -38,14 +40,16 @@
             }
         </script>
 
-    <script defer src="./js/music-player.js"></script>
-    <script defer src="./js/playlists.js"></script>
-    <script defer src="./js/songs-ui.js"></script>
-    <script defer src="./js/albums.js"></script>
-    <script defer src="./js/folder-data.js"></script>
-    <script defer src="./js/twitch.js"></script>
-    <script defer src="./js/discord-presence.js"></script>
-    <script defer src="./js/ui.js"></script> 
+        <script defer src="./js/plugin-manager.r.js"></script>
+        <script defer src="./js/music-player.js"></script>
+        <script defer src="./js/playlists.js"></script>
+        <script defer src="./js/songs-ui.js"></script>
+        <script defer src="./js/albums.js"></script>
+        <script defer src="./js/folder-data.js"></script>
+        <script defer src="./js/twitch.js"></script>
+        <script defer src="./js/discord-presence.js"></script>
+        <script defer src="./js/ui.js"></script>
+    
 
     </head>
     <body id="body" data-currentLevel="top-menu" data-prevLevel="top-menu" data-musicInfoOpen="false" data-settingsOpen="false">
@@ -163,6 +167,62 @@
                     <div id='no-pl-notice' style="display: none"><span>Hey! It looks like you haven't created any playlists yet. Go back to Music to make some! (In the future, you may be able to import playlists from other sources)</span></div>
 
                     <div id="services" style="display: none">
+                        <div id="s-plugins">
+                            <h1>Plugins</h1>
+                            <table class="plugin-list">
+                                <thead>
+                                    <td>Plugin Name</td><td>Version</td><td>Author</td><td>Enabled</td>
+                                </thead>
+                                <tbody id="plugin-list-body">
+                                    
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="s-twitch-div">
+                            <h1>Twitch Integration</h1>
+                            <h2>Initial Setup</h2>
+                            <h3>Do each line <b>in order</b></h3>
+                            Sign into your <b>bot's</b> twitch account: <input id="s-t-login" type="button" value="Sign in with Twitch" onclick="beginTwitchOauthFlow()"><br>
+                            Before closing the popup window, click this button: <input id="s-t-getoauth" type="button" value="Get oauth from popup" onclick="getTwitchOauthFromPopup()" disabled><br>
+                            What is the name of the channel you want to connect to: <input type="text" id="s-t-channel"><br>
+                            Click this button to actually connect to chat: <input id="s-t-connect" type="button" value="connect to chat" onclick="startTwitchIntegration()" disabled><br><hr>
+                            <h2>Options</h2>
+                            Send chat message when a new song plays: <input type="checkbox" id="s-t-o-newsongmessage" checkd>
+
+                            <span>Enable Songrequest (doesnt work yet):</span> <input type="checkbox"><br>
+                            
+                            Who should be allowed to request songs?<br>
+                            <table onclick="updateTwitchSrPerms()">
+                                <tr title="Moderators only">
+                                    <td style="padding-right:2em">Moderators:</td>
+                                    <td><input name="s-t-sr-perm" type="radio" id="s-t-perm-mod"></td>
+                                </tr>
+                                <tr title="VIPs and Moderators">
+                                    <td>VIPs:</td>
+                                    <td><input name="s-t-sr-perm" type="radio" id="s-t-perm-vip"></td>
+                                </tr>
+                                <tr title="Subs, VIPs, Mods">
+                                    <td>Subscribers:</td>
+                                    <td><input name="s-t-sr-perm" type="radio" id="s-t-perm-sub"></td>
+                                </tr>
+                                <!--<tr title="Subs, Vips, Mods"> Commented out because this wont work quite yet
+                                    <td>Subscribers or VIP:</td>
+                                    <td><input name="s-t-sr-perm" type="radio" id="s-t-perm-suborvip"></td>
+                                </tr>-->
+                                <tr title="Anyone">
+                                    <td>Anyone:</td>
+                                    <td><input name="s-t-sr-perm" type="radio" id="s-t-perm-all"></td>
+                                </tr>
+                            </table>
+
+                            <div id="s-t-chatbox">
+                                Chat Log
+                            </div>
+                        </div>
+                        <div id="s-discord-rpc-opts">
+                            <h1>Discord RPC Settings</h1>
+                            coming soon... (hopefully maybe)
+                        </div>
                         <div id="s-yt-test-area">
                             <div id="player"></div>
                             <!--<script>
@@ -208,35 +268,7 @@
                                 }
                             </script>-->
                         </div>
-                        <div id="s-twitch-div">
-                            <span>Twitch Integration</span>
-                            <input type="button" value="Sign in with Twitch" onclick="beginTwitchOauthFlow()"><br>
-                            <span>Enable Songrequest:</span> <input type="checkbox"><br>
-                            
-                            Who should be allowed to request songs?<br>
-                            <table onclick="updateTwitchSrPerms()">
-                                <tr title="Moderators only">
-                                    <td style="padding-right:2em">Moderators:</td>
-                                    <td><input name="s-t-sr-perm" type="radio" id="s-t-perm-mod"></td>
-                                </tr>
-                                <tr title="VIPs and Moderators">
-                                    <td>VIPs:</td>
-                                    <td><input name="s-t-sr-perm" type="radio" id="s-t-perm-vip"></td>
-                                </tr>
-                                <tr title="Subs, VIPs, Mods">
-                                    <td>Subscribers:</td>
-                                    <td><input name="s-t-sr-perm" type="radio" id="s-t-perm-sub"></td>
-                                </tr>
-                                <!--<tr title="Subs, Vips, Mods"> Commented out because this wont work quite yet
-                                    <td>Subscribers or VIP:</td>
-                                    <td><input name="s-t-sr-perm" type="radio" id="s-t-perm-suborvip"></td>
-                                </tr>-->
-                                <tr title="Anyone">
-                                    <td>Anyone:</td>
-                                    <td><input name="s-t-sr-perm" type="radio" id="s-t-perm-all"></td>
-                                </tr>
-                            </table>
-                        </div>
+                        
                     </div>
                 </div>
             </div>
@@ -277,7 +309,7 @@
                         <button id="np-prev"    onclick="prevSong()"><img src="./assets/skip.png" style='transform: scaleX(-1);'></button>
                         <button id="np-pause"   onclick="pauseSong()"><img id="np-pause-img" src="./assets/play.png"></button>
                         <button id="np=next"    onclick="nextSong()"><img src="./assets/skip.png"></button>
-                        <button id="np-shuffle" onclick="shuffleSongs()"><img id="np-shuffle-img" src="./assets/questionmarkbold.png"></button>
+                        <button id="np-shuffle" onclick="shuffleSongs()"><img id="np-shuffle-img" src="./assets/shuffle.png"></button>
                     </div>
                     <div id='shuffle-state'>Shuffle All</div>
                 </div>

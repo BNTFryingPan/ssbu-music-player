@@ -1,0 +1,21 @@
+.plugin-list {
+    width: 100%;
+    border-spacing: 0;
+}
+
+.plugin-list > tbody > tr, .plugin-list > thead > tr {
+    width: 100%;
+}
+
+.plugin-list > tbody, .plugin-list > thead {
+    width: 100%;
+}
+
+.plugin-list > tbody > tr > :last-child, .plugin-list > thead > tr > :last-child {
+    width: 5em;
+    text-align: right;
+}
+
+.plugin-list > tbody > :nth-child(even) {
+    background-color: #fff2
+}
