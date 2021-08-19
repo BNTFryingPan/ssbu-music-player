@@ -71,7 +71,7 @@
         "twitch": "^4.3.2",
         "twitch-electron-auth-provider": "^4.3.2",
         "websocket-stream": "^5.5.2",
-        "ws": "^7.3.1",
+        "ws": "^7.4.6",
         "ytdl-core": "^4.2.0"
     }
 }
