@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"name": "Smash Music Player",
+			"path": ".."
+		},
+		{
+			"name": "Data Folder",
+			"path": "..\\..\\..\\ssbu-music"
+		},
+		{
+			"name": "Music Folder",
+			"path": "..\\..\\..\\..\\Music"
+		}
+	],
+	"settings": {}
+}

@@ -1,4 +1,4 @@
-v0.4.3.1
+v0.4.3.1 (re-release of v0.4.3)
 renabled remote module because it broke things lol (will fix later)
 
 v0.4.3

@@ -16,11 +16,10 @@ function getSongImage(song) {
 async function getSongData(fileName) {
     if (global.songs["All Songs"]["songFilePaths"].includes(fileName)) {
         return global.songs["All Songs"]["songs"][fileName]
-    } else {
-        console.warn("Attempted to get song data for unloaded song: " + fileName)
-        // currently returns this to hopefully show 'undefined' instead of throwing an error. probably a bad way to do it, but idrc for now because this is going to change probably
-        return [{}, {}] // TODO: request for song data from the main process
     }
+    console.warn("Attempted to get song data for unloaded song: " + fileName)
+    // currently returns this to hopefully show 'undefined' instead of throwing an error. probably a bad way to do it, but idrc for now because this is going to change probably
+    return [{}, {}] // TODO: request for song data from the main process
 }
 
 async function playSongFromFile(file) {
@@ -176,12 +175,13 @@ async function playSongFromFile(file) {
 
 function updatePlayingSongInSongLists() {
     if (!nowPlaying["song"]["data"]) return;
+    
     document.querySelectorAll(".song-list-tbody > .playing").forEach((el) => {
         el.classList.remove("playing")
-    })
+    });
     document.querySelectorAll(".song-list-tbody > tr[data-songlocation=\"" + nowPlaying["song"]["data"][0]["fileLocation"] + "\"]").forEach((el) => {
         el.classList.add("playing")
-    })
+    });
 }
 
 // creates an HTML string that can be added to a table body that acts as a song entry.

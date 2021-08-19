@@ -22,10 +22,8 @@ async function openAlbum(albumName) {
 
         document.getElementById('song-list-tbody').innerHTML = updatedHTML;
         updatePlayingSongInSongLists();
-        hideAlbumLayer()
-    } else {
-        hideAlbumLayer()
     }
+    hideAlbumLayer()
     
 
     nowPlaying['currentPage'] = "Music - " + albumName
@@ -39,21 +37,14 @@ async function loadAlbums() {
     var albList = document.getElementById('album-list');
     albList.innerHTML = ""
     for (var alb in songs) {
-        if (songs[alb]["extraText"]) {
-            var extraText = songs[alb]["extraText"]
-            var classes = "album select-hover-anim"
-        } else {
-            var extraText = ""
-            var classes = "album select-hover-anim hide-text"
-        }
+        var classes = "album select-hover-anim hide-text"
+        if (songs[alb]["extraText"]) classes = "album select-hover-anim"
+        
         let extraStyle = ["./assets/none.png", "./assets/all-album.png", "./assets/other-album.png"].includes(songs[alb]["albumArt"]) ? "border-radius:50%" : "border-radius:5%";
-        albList.innerHTML += "<button type='button' id='album-list-album-" + alb.toLowerCase() + "' value='" + extraText + "' class='" + classes + "' onclick='openAlbum(\"" + alb + "\")' style='background-image:url(" + songs[alb]['albumArt'] + ");" + extraStyle + "'>" + extraText + "</button>";
+        albList.innerHTML += `<button type='button' id='album-list-album-${alb.toLowerCase()}' value='${songs[alb]["extraText"] || ""}' class='${classes}' onclick='openAlbum("${alb}")' style='background-image:url(${songs[alb]['albumArt']});${extraStyle}'>${songs[alb]["extraText"] || ""}</button>`;
     }
-    if (songs['Other']['songCount'] === 0) {
-        document.getElementById("album-list-album-other").style.display = "none";
-    } else {
-        document.getElementById("album-list-album-other").style.display = "block";
-    }
+    document.getElementById("album-list-album-other").style.display = songs['Other']['songCount'] === 0 ? "none" : "block";
+
     return true;
 }
 

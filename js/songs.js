@@ -53,17 +53,19 @@ global.songs = {
     }
 }
 
+global.tempSong = {songData: {}, metaData: {}};
+
 /*function sortFunc(a, b) {
     let indxA = a[0]["track"]["no"];
     let indxB = b[0]["track"]["no"];
 
     if (indxA == indxB) {
         if (a[0]["album"] == b[0]["album"]) return 0;
-        else if ([a[0]["album"], b[0]["album"]].sort() == [a[0]["album"], b[0]["album"]]) return -1;
-        else return 1;
+        if ([a[0]["album"], b[0]["album"]].sort() == [a[0]["album"], b[0]["album"]]) return -1;
+        return 1;
     }
-    else if (indxA < indxB) return -1;
-    else return 1
+    if (indxA < indxB) return -1;
+    return 1
 }
 
 function sortAlbum(name) {
@@ -126,6 +128,64 @@ async function getSongData(fileName) {
     return [songData, metaData];
 }
 
+async function loadSingleSong(path, isTemp) {
+    var thisSong = await getSongData(path);
+
+    if (isTemp) {
+        global.tempSong.songData = thisSong[0];
+        global.tempSong.metaData = thisSong[1];
+        return global.tempSong;
+    }
+    if (!(global.songs[thisSong[0]['album']])) {
+        global.songs[thisSong[0]['album']] = {
+            "albumArt": "./assets/none.png",
+            "artists": [],
+            "songs": {},
+            "songFilePaths": [],
+            "duration": 0,
+            "songCount": 0,
+        }
+    }
+
+    global.songs[thisSong[0]['album']]['songs'][path] = thisSong
+    global.songs["All Songs"]['songs'][path] = thisSong
+    global.songs[thisSong[0]['album']]['songFilePaths'].push(path)
+    global.songs["All Songs"]['songFilePaths'].push(path)
+    global.songs[thisSong[0]['album']]["duration"] += thisSong[1]['duration']
+    global.songs["All Songs"]['duration'] += thisSong[1]['duration']
+    global.songs[thisSong[0]['album']]["songCount"]++;
+    global.songs["All Songs"]['songCount']++;
+    
+    // if the songs 'albumartist' isnt in the albums artist list, add them
+    if (!global.songs[thisSong[0]['album']]['artists'].includes(thisSong[0]['albumartist'])) {
+        global.songs[thisSong[0]['album']]['artists'].push(thisSong[0]['albumartist']);
+    }
+
+    global.songs[thisSong[0]['album']]['extraText'] = null
+
+    if (global.songs[thisSong[0]['album']]['albumArt'] == './assets/none.png' && thisSong[0]['picture']) {
+        global.songs[thisSong[0]['album']]['albumArt'] = getSongImage(thisSong);
+    } else if (global.songs[thisSong[0]['album']]['albumArt'] == './assets/none.png') {
+        global.songs[thisSong[0]['album']]['extraText'] = thisSong[0]['album']
+    }
+
+    thisSong[0]['picture'] = thisSong[0]['picture'] ? getSongImage(thisSong) : "./assets/unknown.png"
+
+    if (!global.songs["Other"]["listOfAlbums"].includes(thisSong[0]['album'])) {
+        global.songs["Other"]["listOfAlbums"].push(thisSong[0]['album'])
+    }
+
+    console.log("loaded " + path)
+    
+}
+
+const AUDIO_EXTENSIONS = ["mp3", "ogg", "wav", "flac"]
+
+function extensionIsAudioExtension(ext) {
+    //console.log(`checking ${ext}: full ${AUDIO_EXTENSIONS.includes(ext.includes(".") ? ext.split(".").pop() : ext)} lastext ${ext.split(".").pop}`)
+    return AUDIO_EXTENSIONS.includes(ext.includes(".") ? ext.split(".").pop() : ext)
+}
+
 async function loadSongsFromFolder(directory, recursive, onlySubFolders) {
     log("[Songs] loading songs from " + directory + (recursive ? " recursively" : ""))
     //if (!shouldReadFolder(directory)) {return true}
@@ -135,55 +195,14 @@ async function loadSongsFromFolder(directory, recursive, onlySubFolders) {
     for (var f in files) {
         if (files[f].split('.').length == 1 && recursive) {
             try {
-                if (shouldReadFolder(directory + "/" + files[f])) loadSongsFromFolder(directory + "/" + files[f])
-                else {log("[Songs] skipping " + directory + "/" + files[f])}
+                shouldReadFolder(directory + "/" + files[f]) ?
+                await loadSongsFromFolder(directory + "/" + files[f]) :
+                log("[Songs] skipping " + directory + "/" + files[f])
             } catch (error) {
                 console.warn(files[f] + " doesnt have file extension, but isnt folder either!")
             }
-        } else if (!onlySubFolders && (files[f].endsWith('.mp3') || files[f].endsWith('.ogg') || files[f].endsWith(".wav") || files[f].endsWith(".flac"))) {
-            var thisSong = await getSongData(directory + "/" + files[f]);
-            if (!(global.songs[thisSong[0]['album']])) {
-                global.songs[thisSong[0]['album']] = {
-                    "albumArt": "./assets/none.png",
-                    "artists": [],
-                    "songs": {},
-                    "songFilePaths": [],
-                    "duration": 0,
-                    "songCount": 0,
-                }
-            }
-
-            global.songs[thisSong[0]['album']]['songs'][directory + "/" + files[f]] = thisSong
-                     global.songs["All Songs"]['songs'][directory + "/" + files[f]] = thisSong
-            global.songs[thisSong[0]['album']]['songFilePaths'].push(directory + "/" + files[f])
-                     global.songs["All Songs"]['songFilePaths'].push(directory + "/" + files[f])
-            global.songs[thisSong[0]['album']]["duration"] += thisSong[1]['duration']
-                     global.songs["All Songs"]['duration'] += thisSong[1]['duration']
-            global.songs[thisSong[0]['album']]["songCount"]++;
-                     global.songs["All Songs"]['songCount']++;
-            
-            // if the songs 'albumartist' isnt in the albums artist list, add them
-            if (!global.songs[thisSong[0]['album']]['artists'].includes(thisSong[0]['albumartist'])) {
-                global.songs[thisSong[0]['album']]['artists'].push(thisSong[0]['albumartist']);
-            }
-
-            if (global.songs[thisSong[0]['album']]['albumArt'] == './assets/none.png' && thisSong[0]['picture']) {
-                global.songs[thisSong[0]['album']]['albumArt'] = getSongImage(thisSong);
-            } else if (global.songs[thisSong[0]['album']]['albumArt'] == './assets/none.png') {
-                global.songs[thisSong[0]['album']]['extraText'] = thisSong[0]['album']
-            } else {
-                global.songs[thisSong[0]['album']]['extraText'] = null
-            }
-
-            if (thisSong[0]['picture']) {
-                thisSong[0]['picture'] = getSongImage(thisSong);
-            } else {
-                thisSong[0]['picture'] = "./assets/unknown.png";
-            }
-
-            if (!global.songs["Other"]["listOfAlbums"].includes(thisSong[0]['album'])) {
-                global.songs["Other"]["listOfAlbums"].push(thisSong[0]['album'])
-            }
+        } else if (!onlySubFolders && extensionIsAudioExtension(files[f])) {
+            await loadSingleSong(directory + "/" + files[f], false)
         } //else if (files[f] == ".ssbu-music") {
             //parseFolderDataFile(files[f])
         //}
@@ -195,22 +214,16 @@ async function loadSongsFromFolder(directory, recursive, onlySubFolders) {
 function shouldReadFolder(path) {
     log("[Songs] checking " + path)
     if (fs.existsSync(platFolders.getMusicFolder() + "/folders.ssbu-music")) {
-        let file = fs.readFileSync(platFolders.getMusicFolder() + "/folders.ssbu-music", {encoding: "utf-8"})
-        file = file.replace(/\\/g, "/");
-        let folders = file.split(/\r?\n/);
+        let file = fs.readFileSync(platFolders.getMusicFolder() + "/folders.ssbu-music", {encoding: "utf-8"}).replace(/\\/g, "/");
 
-        if (folders.includes("~" + path)) return false;
+        return !file.split(/\r?\n/).includes("~" + path);
     }
     return true;
 }
 
 function skipFolder(path) {
     let symbols = ['!', '#', '//', '-', '$', "~"]
-    for (sym in symbols) {
-        if (path.startsWith(symbols[sym])) {
-            return true
-        }
-    }
+    for (sym in symbols) if (path.startsWith(symbols[sym])) return true
     return false
 }
 
@@ -224,16 +237,15 @@ async function loadSongsFromMusicFolder() {
         let folders = file.split(/\r?\n/)
         for (f in folders) {
             if (fs.existsSync(folders[f]) && !skipFolder(folders[f])) {
-                if (folders[f].startsWith("%")) {
-                    await loadSongsFromFolder(folders[f].split("%",2)[1], true);
-                } else {
-                    await loadSongsFromFolder(folders[f], false);
-                }
+                folders[f].startsWith("%") ?
+                await loadSongsFromFolder(folders[f].split("%",2)[1], true) :
+                await loadSongsFromFolder(folders[f], false)
             }
         }
     }
     //await loadAlbums();
     //await loadPlaylists();
+    console.log("finished loading songs")
     return global.songs
 }
 

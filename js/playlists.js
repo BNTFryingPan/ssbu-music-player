@@ -4,17 +4,20 @@ function createSongListEntryForYouTubeSource(plSong) {
     return "<tr><td></td><td>YT</td><td>" + plSong['title'] + "</td><td>" + plSong['duration'] +  "</td></tr>"
 }
 
-function openAddToPlaylistMenu(state) {
-    let menu = document.getElementById('song-info-addtopl');
-    state = state || (menu.style.display == "none")
-    if (state) toggleSongInfoModal(false);
+function openAddToPlaylistMenu(song, state) {
+    let menu = document.getElementById('song-info-addtopl')
+    let plSelect = document.getElementById('atp-select-pl')
+    state ??= (menu.style.display == "none")
+
+    if (typeof song == "string") nowPlaying.songToAddToPlaylist = song
+    if (state) toggleSongInfoModal(false)
+
     menu.style.display = (state ? "block" : "none")
     document.getElementById('body').setAttribute('data-atpMenuOpen', (state ? "true" : "false"))
-    let plSelect = document.getElementById('atp-select-pl');
+    document.getElementById('atp-song').innerHTML = song || "unknown song"
+    
     plSelect.innerHTML = ""
-    for (pl in playlists) {
-        plSelect.innerHTML += "<option value='" + pl + "'>" + pl + "</option>"
-    }
+    for (pl in playlists) plSelect.innerHTML += "<option value='" + pl + "'>" + pl + "</option>"
     plSelect.innerHTML += "<option value='%new'>New Playlist</option>"
 }
 
@@ -25,32 +28,32 @@ function addSongToPlaylistButton() {
         if (newPlName === "%new") {
             alert("invalid playlist name");
             return;
-        } else {
-            playlists[newPlName] = {"songs": [], "name": newPlName, "songCount": 0, "duration": 0, "showName": true}
-            plToAddTo = newPlName;
-            document.getElementById("playlist-list").innerHTML += "<button type='button' class='album select-hover-anim' style='background-image:url(./assets/none.png);border-radius:50%' value='" + newPlName + "' onclick='openPlaylist(\"" + newPlName + "\")'>" + newPlName + "</button>";
         }
+        playlists[newPlName] = {"songs": [], "name": newPlName, "songCount": 0, "duration": 0, "showName": true}
+        plToAddTo = newPlName;
+        document.getElementById("playlist-list").innerHTML += "<button type='button' class='album select-hover-anim' style='background-image:url(./assets/none.png);border-radius:50%' value='" + newPlName + "' onclick='openPlaylist(\"" + newPlName + "\")'>" + newPlName + "</button>";
     }
-    playlists[plToAddTo]["songs"].push({"type":"file","dir":nowPlaying["song"]["data"][0]["fileLocation"],"playlist":plToAddTo});
-    playlists[plToAddTo]["songCount"]++;
-    playlists[plToAddTo]["duration"] += nowPlaying["song"]["data"][1]["duration"];
-    savePlaylistsToFile()
+    
+    getSongData(nowPlaying.songToAddToPlaylist).then(songToAddToPlaylist=>{
+        playlists[plToAddTo]["songs"].push({"type": "file", "dir": songToAddToPlaylist[0]["fileLocation"], "playlist": plToAddTo})
+        playlists[plToAddTo]["songCount"]++
+        playlists[plToAddTo]["duration"] += songToAddToPlaylist[1]["duration"]
+        savePlaylistsToFile()
+    })
 }
 
 async function createSongPlaylistEntryFromSongData(fileLocation, extraCode) {
-    let data = await getSongData(fileLocation);
-    let songData = data[0];
-    let metaData = data[1];
+    let songData = await getSongData(fileLocation)[0]
+    //let data = await getSongData(fileLocation);
+    //let songData = data[0];
+    //let metaData = data[1];
     
     return "<tr data-songLocation='" + fileLocation + "' onclick=\"playSongFromFile('" + fileLocation.replaceAll("'", "\\'") + "');" + extraCode + "\"><td></td><td>" + songData['track']['no'] + "</td><td>" + songData['title'] + "</td><td>" + songData['album'] + "</td><td>" + songData['duration'] +  "</td></tr>"
 }
 
 async function createSongPlaylistEntry(plSong) {
-    if (plSong['type'] == "file") {
-        return createSongPlaylistEntryFromSongData(plSong['dir'], "updateCurrentShuffleSource({type:'playlist',name:'" + plSong['playlist'] + "'})");
-    } else if (plSong['type'] == "yt") {
-        return createSongListEntryForYouTubeSource(plSong);
-    }
+    if (plSong['type'] == "file") return createSongPlaylistEntryFromSongData(plSong['dir'], "updateCurrentShuffleSource({type:'playlist',name:'" + plSong['playlist'] + "'})");
+    if (plSong['type'] == "yt") return createSongListEntryForYouTubeSource(plSong);
 }
 
 async function openPlaylist(playlistName) {

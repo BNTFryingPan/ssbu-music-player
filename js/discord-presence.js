@@ -49,56 +49,69 @@ source-other - other source image
 
 // gets an art asset key based on an album name
 function getDiscordArtAssetKeyFromAlbumName(name) {
-    if (artAssetKeyDict[name.toLowerCase()]) {
-        return artAssetKeyDict[name.toLowerCase()]
-    } else if (name.includes("Sonic") || name.includes ("SONIC")) {
-        return artAssetKeyDict["sonic"]
-    } else {
-        let key = ["%logo", "%default"][Math.floor(Math.random()*2)] // randomly chooses between the logo and the ? icon
-        return artAssetKeyDict[key]
-    }
+    if (artAssetKeyDict[name.toLowerCase()]) return artAssetKeyDict[name.toLowerCase()]
+    if (name.includes("Sonic") || name.includes ("SONIC")) return artAssetKeyDict["sonic"]
+    return artAssetKeyDict[["%logo", "%default"][Math.floor(Math.random()*2)]] // randomly chooses between the logo and the ? icon
 }
 
 function formatPresenceString(str) {
+    if (nowPlaying.song.type === "local-file")
     return str // formats a string intended to be used in discord RPC, but it could probably be used in other places (custom title bar text?)
-    .replaceAll("{song.artist}",    nowPlaying["song"]["data"][0]["artist"])
-    .replaceAll("{song.title}",     nowPlaying['song']['data'][0]['title'])
-    .replaceAll("{song.album}",     nowPlaying['song']['data'][0]['album'])
-    .replaceAll("{song.track.no}",  nowPlaying['song']['data'][0]['track']['no'])
-    .replaceAll("{song.track.of}",  nowPlaying['song']['data'][0]['track']['of'])
-    .replaceAll("{song.disk.no}",   nowPlaying['song']['data'][0]['disk']['no'])
-    .replaceAll("{song.disk.of}",   nowPlaying['song']['data'][0]['disk']['of'])
-    .replaceAll("{song.disc.no}",   nowPlaying['song']['data'][0]['disk']['no'])
-    .replaceAll("{song.disc.of}",   nowPlaying['song']['data'][0]['disk']['of'])
-    .replaceAll("{player.state}",   nowPlaying['playbackState'])
-    .replaceAll("{player.loops}",   nowPlaying["loopCount"] == 0 ? "" : nowPlaying["loopCount"])
-    .replaceAll("{player.version}", "v" + document.getElementById('version-display').innerHTML)
-    .replaceAll("{player.icons}",   iconsGen.playbackState[nowPlaying["playbackState"]] + iconsGen.shuffleMode[nowPlaying["shuffleMode"]])
-    .replaceAll("{player.page}",    nowPlaying["currentPage"])
-    .replaceAll("{meta.bitrate}",   nowPlaying["song"]["data"][1]["bitrate"])
-    .replaceAll("{meta.duration}",  nowPlaying['song']['data'][0]['duration']);
+        .replaceAll("{song.artist}",    nowPlaying.song.data[0].artist)
+        .replaceAll("{song.title}",     nowPlaying.song.data[0].title)
+        .replaceAll("{song.album}",     nowPlaying.song.data[0].album)
+        .replaceAll("{song.track.no}",  nowPlaying.song.data[0].track.no)
+        .replaceAll("{song.track.of}",  nowPlaying.song.data[0].track.of)
+        .replaceAll("{song.disk.no}",   nowPlaying.song.data[0].disk.no)
+        .replaceAll("{song.disk.of}",   nowPlaying.song.data[0].disk.of)
+        .replaceAll("{song.disc.no}",   nowPlaying.song.data[0].disk.no)
+        .replaceAll("{song.disc.of}",   nowPlaying.song.data[0].disk.of)
+        .replaceAll("{player.state}",   nowPlaying.playbackState)
+        .replaceAll("{player.loops}",   nowPlaying.loopCount == 0 ? "" : nowPlaying.loopCount)
+        .replaceAll("{player.version}", "v" + window.Bridge.version)
+        .replaceAll("{player.icons}",   iconsGen.playbackState[nowPlaying.playbackState] + iconsGen.shuffleMode[nowPlaying["shuffleMode"]])
+        .replaceAll("{player.page}",    nowPlaying.currentPage)
+        .replaceAll("{meta.bitrate}",   nowPlaying.song.data[1].bitrate)
+        .replaceAll("{meta.duration}",  nowPlaying.song.data[0].duration);
+    if (nowPlaying.song.type === "yt")
+    return str
+        .replaceAll("{song.artist}",    nowPlaying.song.videoData.videoDetails.author)
+        .replaceAll("{song.title}",     nowPlaying.song.videoData.videoDetails.title)
+        .replaceAll("{song.album}",     "{album}")
+        .replaceAll("{song.track.no}",  "?")
+        .replaceAll("{song.track.of}",  "?")
+        .replaceAll("{song.disk.no}",   "?")
+        .replaceAll("{song.disk.of}",   "?")
+        .replaceAll("{song.disc.no}",   "?")
+        .replaceAll("{song.disc.of}",   "?")
+        .replaceAll("{player.state}",   nowPlaying.playbackState)
+        .replaceAll("{player.loops}",   nowPlaying.loopCount == 0 ? "" : nowPlaying.loopCount)
+        //.replaceAll("{player.version}", "v" + document.getElementById('version-display').innerHTML)
+        .replaceAll("{player.icons}",   iconsGen.playbackState[nowPlaying.playbackState] + iconsGen.shuffleMode[nowPlaying.shuffleMode])
+        .replaceAll("{player.page}",    nowPlaying.currentPage)
+        .replaceAll("{meta.bitrate}",   "YT")
+        .replaceAll("{meta.duration}",  nowPlaying.song.videoData.videoDetails.lengthSeconds);
+    return str
+
 }
 
 function updateRPC() { // updates the discord status by sending a request to the main process
     if (userSettings["discord"]["enableRPC"] == false) { return false }
-    if (nowPlaying['song']['data'] == null) {
-        ipcRenderer.send("rpc:setactivity", {details: "Idle ⏹️", state: nowPlaying['currentPage']});
-    } else {
-        ipcRenderer.send("rpc:setactivity", {
-            details: formatPresenceString(userSettings.discord["details"]),
-            state: formatPresenceString(userSettings.discord["state"]),
-            largeImageText: formatPresenceString(userSettings.discord['largeImageText']),
-            smallImageText: formatPresenceString(userSettings.discord['smallImageText']),
-            largeImageKey: getDiscordArtAssetKeyFromAlbumName(nowPlaying['song']['data'][0]['album']),
-            smallImageKey: "unknown-album-image",
-            startTimestamp: nowPlaying['startTime'][userSettings.discord["startTimestampMode"] || "song"],
-            //joinSecret: window.Bridge.IP,
-            partySize: nowPlaying['song']['data'][0]['track']['no'] == "--" ? 1 : nowPlaying['song']['data'][0]['track']['no'],
-            partyMax: nowPlaying['song']['data'][0]['track']['of'] == "--" ? 1 : nowPlaying['song']['data'][0]['track']['of'],
-            matchSecret: "matchsecret",
-            partyId: "partyid"
-        });
-    }
+    if (nowPlaying['song']['data'] == null) return ipcRenderer.send("rpc:setactivity", {details: "Idle ⏹️", state: nowPlaying['currentPage']});
+    return ipcRenderer.send("rpc:setactivity", {
+        details: formatPresenceString(userSettings.discord["details"]),
+        state: formatPresenceString(userSettings.discord["state"]),
+        largeImageText: formatPresenceString(userSettings.discord['largeImageText']),
+        smallImageText: formatPresenceString(userSettings.discord['smallImageText']),
+        largeImageKey: getDiscordArtAssetKeyFromAlbumName(nowPlaying['song']['data'][0]['album']),
+        smallImageKey: "unknown-album-image",
+        startTimestamp: nowPlaying['startTime'][userSettings.discord["startTimestampMode"] || "song"],
+        //joinSecret: window.Bridge.IP,
+        partySize: nowPlaying['song']['data'][0]['track']['no'] == "--" ? 1 : nowPlaying['song']['data'][0]['track']['no'],
+        partyMax: nowPlaying['song']['data'][0]['track']['of'] == "--" ? 1 : nowPlaying['song']['data'][0]['track']['of'],
+        matchSecret: "matchsecret",
+        partyId: "partyid"
+    });
 }
 
 function rpcUpdateSong(song) { // sends a packet for listening parties. idk if this works or not lol

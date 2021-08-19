@@ -10,11 +10,14 @@
         <link rel="stylesheet" href="./css/nowplaying.css">
         <link rel="stylesheet" href="./css/services.css">
         <link rel="stylesheet" href="./css/songlist.css">
-        <link rel="stylesheet" href="./css/titlebar.css">
+        
         <link rel="stylesheet" href="./css/topmenu.css">
         <link rel="stylesheet" href="./css/plugins.css">
 
         <script>
+            function hasCustomTitleBar() {return process.platform === "windows"}
+            document.write(`<link rel="stylesheet" href="./css/titlebar${hasCustomTitleBar()?"":"-linux"}.css">`)
+
             //var audioCtx = new AudioContext();
             //var audioElem;
             //var src;
@@ -91,7 +94,7 @@
 
                 </div>
             </div>
-        </header>
+        </header>        
 
         
         <div id='main'>
@@ -187,34 +190,16 @@
                             What is the name of the channel you want to connect to: <input type="text" id="s-t-channel"><br>
                             Click this button to actually connect to chat: <input id="s-t-connect" type="button" value="connect to chat" onclick="startTwitchIntegration()" disabled><br><hr>
                             <h2>Options</h2>
-                            Send chat message when a new song plays: <input type="checkbox" id="s-t-o-newsongmessage" checkd>
-
-                            <span>Enable Songrequest (doesnt work yet):</span> <input type="checkbox"><br>
-                            
-                            Who should be allowed to request songs?<br>
-                            <table onclick="updateTwitchSrPerms()">
-                                <tr title="Moderators only">
-                                    <td style="padding-right:2em">Moderators:</td>
-                                    <td><input name="s-t-sr-perm" type="radio" id="s-t-perm-mod"></td>
-                                </tr>
-                                <tr title="VIPs and Moderators">
-                                    <td>VIPs:</td>
-                                    <td><input name="s-t-sr-perm" type="radio" id="s-t-perm-vip"></td>
-                                </tr>
-                                <tr title="Subs, VIPs, Mods">
-                                    <td>Subscribers:</td>
-                                    <td><input name="s-t-sr-perm" type="radio" id="s-t-perm-sub"></td>
-                                </tr>
-                                <!--<tr title="Subs, Vips, Mods"> Commented out because this wont work quite yet
-                                    <td>Subscribers or VIP:</td>
-                                    <td><input name="s-t-sr-perm" type="radio" id="s-t-perm-suborvip"></td>
-                                </tr>-->
-                                <tr title="Anyone">
-                                    <td>Anyone:</td>
-                                    <td><input name="s-t-sr-perm" type="radio" id="s-t-perm-all"></td>
-                                </tr>
-                            </table>
-
+                            Send chat message when a new song plays: <input type="checkbox" id="s-t-o-newsongmessage" checkd><br>
+                            Enable Songrequest (doesnt work yet): <input id="sto-enablesr" type="checkbox"><br>
+                            Who can request songs: <select id="sto-mr-sr">
+                                <option value="mod">Moderators</option>
+                                <option value="vip">VIPs</option>
+                                <option value="sub">Subscribers</option>
+                                <option value="all" selected>Anyone</option>
+                            </select><br>
+                            Maximum song length (seconds): <input id="sto-maxlength" type="number" min="0" max="43200" value="900"><br>
+                            Mimimum song views: <input id="sto-minviews" type="number" min="0" value="0"><br>
                             <div id="s-t-chatbox">
                                 Chat Log
                             </div>
@@ -292,6 +277,7 @@
                     </div>
                     <div id="song-info-addtopl" style="display: none;z-index:10">
                         <input type="button" onclick="openAddToPlaylistMenu(false)" value="Cancel" id="atp-menu-close">
+                        Song to add: <span id="atp-song">?</span><br>
                         Playlist: <select id="atp-select-pl" oninput="updateAddToPlaylistMenu()"><option value="%new">New Playlist</option></select><br>
                         Playlist to create: <input type="text" id="atp-new-pl-name" placeholder="name of playlist"><br>
                         <input type="button" onclick="addSongToPlaylistButton()" value="Add to Playlist" id="atp-menu-add-button">

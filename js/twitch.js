@@ -72,15 +72,10 @@ function updateTwitchSrPerms() {
     we can then just check their perm level to see what perms we want
     */
     permissions['sr'] = 0
-    if (document.getElementById("s-t-perm-all").checked) {
-        permissions['sr'] += 1
-    } if (document.getElementById("s-t-perm-sub").checked) {
-        permissions['sr'] += 2
-    } if (document.getElementById("s-t-perm-vip").checked) {
-        permissions['sr'] += 4
-    } if (document.getElementById("s-t-perm-mod").checked) {
-        permissions['sr'] += 8
-    }
+    if (document.getElementById("s-t-perm-all").checked) permissions['sr'] += 1
+    if (document.getElementById("s-t-perm-sub").checked) permissions['sr'] += 2
+    if (document.getElementById("s-t-perm-vip").checked) permissions['sr'] += 4
+    if (document.getElementById("s-t-perm-mod").checked) permissions['sr'] += 8
 }
 
 function sendNewSongPlayingMessage(song, extra) {
@@ -91,6 +86,11 @@ function sendNewSongPlayingMessage(song, extra) {
         song = song || nowPlaying[song]
         bot.say(tch, extra + getSongMessage(song))
     }
+}
+
+function sendTwitchMessage(msg, ch) {
+    if (!bot.ready) return
+    bot.say(ch || tch, msg);
 }
 
 function getSongMessage(song) {
@@ -105,100 +105,92 @@ function getSongMessage(song) {
     return nowPlayingMessage;
 }
 
+function user(msg) {
+    return {username: msg.senderUsername, id: msg.senderID, mod: msg.isMod, display: msg.displayName, color: msg.color, badges: msg.badges}
+}
+
 function startTwitchIntegration() {
-    if (readyToJoinChat && document.getElementById("s-t-channel").value != "") {
-        twitchOauthData["channel_to_join"] = document.getElementById("s-t-channel").value
-        tch = twitchOauthData["channel_to_join"].toLowerCase()
-        bot = new irc.ChatClient({
-            username: "thederpymemebot", // hardcoded for now /shrug
-            password: "oauth:" + twitchOauthData["access_token"]
-        })
-        bot.on("PRIVMSG", msg => {
-            console.log(msg)
-            var userPermissionLevel = 1;
-
-            if (msg.badges.hasSubscriber) {
-                userPermissionLevel += 2;
-            }
-            if (msg.badges.hasVIP) {
-                userPermissionLevel += 4;
-            }
-            if (msg.badges.hasModerator) {
-                userPermissionLevel += 8;
-            }
-            if (msg.badges.hasBroadcaster) {
-                userPermissionLevel += 16
-            }
-            
-            console.log(`[#${msg.channelName}] ${msg.displayName}: ${msg.messageText}`);
-            
-            /*if (msg.messageText.startsWith("!sr") || msg.messageText.startsWith("!songrequest")) {
-                if (userPermissionLevel >= permissions['sr']) {
-                    var args = msg.messageText.split(" ");
+    if (!(readyToJoinChat && document.getElementById("s-t-channel").value != "")) return alert("Sign into twitch first!");
+    twitchOauthData["channel_to_join"] = document.getElementById("s-t-channel").value
+    tch = twitchOauthData["channel_to_join"].toLowerCase()
+    bot = new irc.ChatClient({
+        username: "thederpymemebot", // hardcoded for now /shrug
+        password: "oauth:" + twitchOauthData["access_token"]
+    })
+    bot.on("PRIVMSG", msg => {
+        if (bot.configuration.username == msg.senderUsername)
+        //console.log(msg)
+        console.log(`[#${msg.channelName}] ${msg.displayName}: ${msg.messageText}`);
+        dispatchEvent("T-PRIVMSG", msg)
+        
+        if (msg.messageText.startsWith("!sr") || msg.messageText.startsWith("!songrequest")) {
+            let args = msg.messageText.split(" ");
+        
+            ytdl.getInfo(ytdl.getVideoID(args[1])).then((info) => {
+                console.log(info)
+                if (parseInt(info.videoDetails.lengthSeconds) >= document.getElementById("sto-maxlength").value) return bot.say(tch, "That song is too long! (max: " + document.getElementById("sto-maxlength").value + " seconds)")
+                if (parseInt(info.videoDetails.viewCount) <= document.getElementById("sto-minviews").value) return bot.say(tch, "That video doesn't have enough views! (minimum: " + document.getElementById("sto-minviews").value + ")")
                 
-                    var ytUrl = ytdl.getVideoID(args[1]);
-                    nowPlaying['youtube-queue'].push({"url": ytUrl, "requester": msg.displayName})
-                } else {
-                    bot.whisper(msg.username, "Hey. Sorry, but you can't use song request!")
-                }
-            } else*/ 
-            if (msg.messageText.startsWith("!song")) {
-                var nowPlayingMessage = "Now Playing: ";
+                nowPlaying['youtube-queue'].push({id: info.videoDetails.videoId, requester: user(msg), details: info})
+                bot.say(tch, "Requested " + info.videoDetails.title + " by " + info.videoDetails.ownerChannelName);
+                
+            });
+            //nowPlaying['youtube-queue'].push({"id": ytUrl, "requester": msg.displayName})
+            /*} else {
+                bot.whisper(msg.username, "Hey. Sorry, but you can't use song request!")
+            }*/
+        } else if (msg.messageText.startsWith("!song")) {
+            var nowPlayingMessage = "Now Playing: ";
 
-                if (nowPlaying['song']['type'] == "local-file") {
-                    nowPlayingMessage += nowPlaying['song']['data'][0]['title'] + " from " + nowPlaying['song']['data'][0]['album'] + " by " + nowPlaying['song']['data'][0]['artist'] + " from a file."
-                } else if (nowPlaying['song']['type'] == "yt") {
-                    nowPlayingMessage += "Something on YouTube."
-                }
-
-                bot.say(tch, nowPlayingMessage)
-            } else if (msg.messageText.startsWith("!source") || msg.messageText.startsWith("!album") || msg.messageText.startsWith("!playlist") || msg.messageText.startsWith("!pl")) {
-                if (nowPlaying["shuffleMode"] == "shuffleall") {
-                    bot.say(tch, "Currently shuffling from all songs!")
-                } else if (nowPlaying["shuffleMode"] == "shufflesource") {
-                    bot.say(tch, "Currently shuffling from " + nowPlaying["shuffleSource"]["type"] + " named '" + nowPlaying["shuffleSource"]["name"] + "'.")
-                } else if (nowPlaying["shuffleMode"] == "loop") {
-                    bot.say(tch, "Currently looping " + nowPlaying["song"]["data"][0]["title"] + ".")
-                } else if (nowPlaying["shuffleMode"] == "order") {
-                    bot.say(tch, "Currently playing songs in order from " + nowPlaying["shuffleSource"]["type"] + " named '" + nowPlaying["shuffleSource"]["name"] + "'.")
-                }
-            } else if (msg.messageText.startsWith("!ver")) {
-                bot.say(tch, "Currently running Smash Music Player " + document.getElementById("version-display").innerHTML)
-            } else if (userPermissionLevel >= permissions['fullControl']) {
-                if (msg.messageText.startsWith("!skip") || msg.messageText.startsWith("!nextsong")) {
-                    nextSong();
-                    sendNewSongPlayingMessage("Skipped song. Now Playing " + nowPlaying['song']['data'][0]['title'] + " from " + nowPlaying['song']['data'][0]['album'] + " by " + nowPlaying['song']['data'][0]['artist'] + " from a file.");
-                }
+            if (nowPlaying['song']['type'] == "local-file") {
+                nowPlayingMessage += nowPlaying['song']['data'][0]['title'] + " from " + nowPlaying['song']['data'][0]['album'] + " by " + nowPlaying['song']['data'][0]['artist'] + " from a file."
+            } else if (nowPlaying['song']['type'] == "yt") {
+                nowPlayingMessage += "Something on YouTube."
             }
-            dispatchEvent("T-PRIVMSG", msg)
-        })
-        bot.on("close", (err) => {if (err) {console.error(err)}})
-        bot.on("ready", () => {console.log("bot connected!")})
-        bot.on("WHISPER", msg => {
-            console.log(`[#DM ${msg.displayName}]: ${msg.messageText}`);
-            dispatchEvent("T-WHISPER", msg)
-        });
 
-        bot.on("USERNOTICE",      (msg) => {dispatchEvent("T-USERNOTICE", msg)})
-        bot.on("CLEARCHAT",       (msg) => {dispatchEvent("T-CLEARCHAT", msg)})
-        bot.on("CLEARMSG",        (msg) => {dispatchEvent("T-CLEARMSG", msg)})
-        bot.on("HOSTTARGET",      (msg) => {dispatchEvent("T-HOSTTARGET", msg)})
-        bot.on("NOTICE",          (msg) => {dispatchEvent("T-NOTICE", msg)})
-        bot.on("ROOMSTATE",       (msg) => {dispatchEvent("T-ROOMSTATE", msg)})
-        bot.on("USERSTATE",       (msg) => {dispatchEvent("T-USERSTATE", msg)})
-        bot.on("GLOBALUSERSTATE", (msg) => {dispatchEvent("T-GLOBALUSERSTATE", msg)})
-        bot.on("JOIN",            (msg) => {dispatchEvent("T-JOIN", msg)})
-        bot.on("PART",            (msg) => {dispatchEvent("T-PART", msg)})
+            bot.say(tch, nowPlayingMessage)
+        } else if (msg.messageText.startsWith("!source") || msg.messageText.startsWith("!album") || msg.messageText.startsWith("!playlist") || msg.messageText.startsWith("!pl")) {
+            let resp = "Couldn't find the current shuffle mode!"
+            
+            if (nowPlaying["shuffleMode"] == "shuffleall") resp = "Currently shuffling from all songs!"
+            if (nowPlaying["shuffleMode"] == "loop") resp = `Currently looping ${nowPlaying["song"]["data"][0]["title"]}.`
+            if (nowPlaying["shuffleMode"] == "shufflesource") resp = `Currently shuffling from ${nowPlaying["shuffleSource"]["type"]} named '${nowPlaying["shuffleSource"]["name"]}'.`
+            if (nowPlaying["shuffleMode"] == "order") resp = `Currently playing songs in order from ${nowPlaying["shuffleSource"]["type"]} named '${nowPlaying["shuffleSource"]["name"]}'.`
+
+            bot.say(tch, resp)
+        } else if (msg.messageText.startsWith("!ver")) {
+            bot.say(tch, "Currently running Smash Music Player " + document.getElementById("version-display").innerHTML)
+        } else if (msg.isMod) {
+            if (msg.messageText.startsWith("!skip") || msg.messageText.startsWith("!nextsong")) {
+                nextSong();
+                sendNewSongPlayingMessage("Skipped song. Now Playing " + nowPlaying['song']['data'][0]['title'] + " from " + nowPlaying['song']['data'][0]['album'] + " by " + nowPlaying['song']['data'][0]['artist'] + " from a file.");
+            }
+        }
+    })
+    bot.on("close", (err) => {if (err) {console.error(err)}})
+    bot.on("ready", () => {console.log("bot connected!")})
+    bot.on("WHISPER", msg => {
+        console.log(`[#DM ${msg.displayName}]: ${msg.messageText}`);
+        dispatchEvent("T-WHISPER", msg)
+    });
+
+    bot.on("USERNOTICE",      (msg) => {dispatchEvent("T-USERNOTICE", msg)})
+    bot.on("CLEARCHAT",       (msg) => {dispatchEvent("T-CLEARCHAT", msg)})
+    bot.on("CLEARMSG",        (msg) => {dispatchEvent("T-CLEARMSG", msg)})
+    bot.on("HOSTTARGET",      (msg) => {dispatchEvent("T-HOSTTARGET", msg)})
+    bot.on("NOTICE",          (msg) => {dispatchEvent("T-NOTICE", msg)})
+    bot.on("ROOMSTATE",       (msg) => {dispatchEvent("T-ROOMSTATE", msg)})
+    bot.on("USERSTATE",       (msg) => {dispatchEvent("T-USERSTATE", msg)})
+    bot.on("GLOBALUSERSTATE", (msg) => {dispatchEvent("T-GLOBALUSERSTATE", msg)})
+    bot.on("JOIN",            (msg) => {dispatchEvent("T-JOIN", msg)})
+    bot.on("PART",            (msg) => {dispatchEvent("T-PART", msg)})
 
 
-        bot.connect();
-        bot.join(tch);
-        document.getElementById("s-t-connect").disabled = true;
-        dispatchEvent("T-INTEGRATIONSTARTED")
-        //bot.say(tch, "SSBU Music Player v0.1.2 Song Request bot is now in chat!")
-    } else {
-        alert("Sign into twitch first!")
-    }
+    bot.connect();
+    bot.join(tch);
+    document.getElementById("s-t-connect").disabled = true;
+    dispatchEvent("T-INTEGRATIONSTARTED")
+    //bot.say(tch, "SSBU Music Player v0.1.2 Song Request bot is now in chat!")
 }
 
 window.onmessage = function(event){
@@ -213,14 +205,7 @@ function getUserDataFromToken(url, callback, token) {
     xhr.open('GET', url, true);
     //xhr.setRequestHeader()
     xhr.responseType = 'json';
-    xhr.onload = function() {
-      var status = xhr.status;
-      if (status === 200) {
-        callback(null, xhr.response);
-      } else {
-        callback(status, xhr.response);
-      }
-    };
+    xhr.onload = ()=>callback(xhr.status === 200 ? null : xhr.status, xhr.response);
     xhr.send();
 }
 
@@ -242,23 +227,21 @@ function beginTwitchOauthFlow() {
 }
 
 function getTwitchOauthFromPopup() {
-    if (oauth.location.hash.startsWith("#")) {
-        let data = {};
-        let dataEntries = oauth.location.hash.split('#', 2)[1].split("&");
+    if (!oauth.location.hash.startsWith("#")) return
+    let data = {};
+    let dataEntries = oauth.location.hash.split('#', 2)[1].split("&");
 
-        for (let ent in dataEntries) {
-            let entName = dataEntries[ent].split('=')[0];
-            let entValue = dataEntries[ent].split('=', 2)[1]
-            data[entName] = entValue
-        }
-        
-        twitchOauthData = data;
-        readyToJoinChat = true;
-        document.getElementById("s-t-connect").disabled = false;
-        document.getElementById("s-t-getoauth").disabled = true;
-        document.getElementById("s-t-login").disabled = true;
+    for (let ent in dataEntries) {
+        let entName = dataEntries[ent].split('=')[0];
+        let entValue = dataEntries[ent].split('=', 2)[1]
+        data[entName] = entValue
     }
     
+    twitchOauthData = data;
+    readyToJoinChat = true;
+    document.getElementById("s-t-connect").disabled = false;
+    document.getElementById("s-t-getoauth").disabled = true;
+    document.getElementById("s-t-login").disabled = true;
 }
 
 //function onEvent(eventType, content) {

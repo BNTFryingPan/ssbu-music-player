@@ -9,19 +9,19 @@ global.logQueue = []
 
 // special log function that should also log to the browser window devtools console
 function log(msg, opts) {
-    if (opts) console.log(msg, opts);
-    else      console.log(msg)
-    if (mainWindow) { // we dont want to refrence the mainWindow if it doesnt exist yet
-        mainWindow.webContents.send("console:log", msg)
-    } else { // so if it doesnt exist, save it to a queue that will be requested by the window when it is ready to
-        logQueue.push(msg);
-    }
+    console.log(msg, opts??"");
+    mainWindow ? // we dont want to refrence the mainWindow if it doesnt exist yet
+    mainWindow.webContents.send("console:log", msg) :
+    logQueue.push(msg) // so if it doesnt exist, save it to a queue that will be requested by the window when it is ready to
 }
 global.log = log; // allows me to use this anywhere (but mostly for the node debug console)
 log("loading required modules...")
 
 // Modules to control application life and create native browser window
 const {app, ipcMain, systemPreferences, dialog, globalShortcut} = require('electron');
+var isFirstInstance = app.requestSingleInstanceLock();
+if (!isFirstInstance) return app.quit();
+
 const path = require('path');
 const platFolders = require('platform-folders');
 //const ewc = require('@svensken/ewc');
@@ -55,9 +55,8 @@ log("registering handlers and listeners...")
 ipcMain.on("console:getlogs", (e) => {
     //console.log("sending logs to browser window")
     //console.timeEnd("interactable")
-    for (let msg in logQueue) {
-        mainWindow.webContents.send("console:log", logQueue[msg]);
-        delete logQueue[msg];
+    while (logQueue.length > 0) {
+        mainWindow.webContents.send("console:log", logQueue.shift());
     }
 
     mainWindow.setThumbarButtons([
@@ -82,7 +81,16 @@ ipcMain.on("console:getlogs", (e) => {
 
 // sends the song list to the browser window when requested to
 ipcMain.handle("songs:getSongList", (e) => {
+    log("sending songs to browser")
     return songs
+})
+
+ipcMain.handle("main:getVersion", e=>{
+    log("sending version to browser")
+    return {
+        isPackaged: app.isPackaged,
+        version: app.isPackaged ? app.getVersion() : (require("./package.json").version + " - Development Build")
+    }
 })
 
 // opens the the music folders file, and creates it first if it does not exist
@@ -106,15 +114,15 @@ ipcMain.on("file:openSettingsFile", () => {
 
 // allows the browser window to set a discord status
 ipcMain.on("rpc:setactivity", (e, activity) => {
-    if (rpcReady) {
-        rpc.setActivity(activity)
-        //log("rpc: " + JSON.stringify(activity))
-    } else {
-        rpcCache = activity;
-    }
+    //if (!isWindows10()) return false // only works on windows for now (not sure why), too lazy to check for other windows versions though
+    if (!rpcReady) rpcCache = activity;
+    rpc.setActivity(activity)
+    //log("rpc: " + JSON.stringify(activity))
+
 })
 
 async function startRPC() {
+    //if (!isWindows10()) return false
     log("setting up discord rpc...")
 
     DiscordRPC.register(clientID);
@@ -123,13 +131,11 @@ async function startRPC() {
 
     rpc.on('ready', () => {
         rpcReady = true
-    
-        if (rpcCache !== null) { // if the browser tried setting a status before RPC was ready, we store it, and set it when RPC is actually ready
-            rpc.setActivity(rpcCache);
-            rpcCache = null;
-        } else {
-            rpc.setActivity({"state": "idle"})
-        }
+
+        rpcCache ??= {"state": "idle"}
+        rpc.setActivity(rpcCache)
+        rpcCache = null;
+        
         //setInterval(() => {updateRPC()}, 15e3);
     })
     
@@ -179,6 +185,10 @@ function isWindows10() {
     return os.release().split('.')[0] === '10';
 }
 
+function supportsVibrancy() {
+    return process.platform === "darwin" || isWindows10();
+}
+
 function getVibrancySettings() {
     if (isWindows10()) return {
         theme: '#22222222',
@@ -187,7 +197,7 @@ function getVibrancySettings() {
         disableOnBlur: true,
         debug: false
     };
-    else return 'dark'; // if not on windows 10, this is used as the "vibrancy" setting on OSX, which is similar to acrylic
+    return 'dark'; // if not on windows 10, this is used as the "vibrancy" setting on OSX, which is similar to acrylic
     // if not on OSX, this setting is just ignored at that point
 }
 
@@ -196,25 +206,39 @@ var twitchOauthWindow = null;
 async function createWindow () {
     // Create the browser window.
     log("creating browser window...")
-    
-    mainWindow = new BrowserWindow({
+
+    let browserWindowProperties = {
         width: 900,
         height: 600,
         minWidth: 550, 
         minHeight: 475,
-        //transparent: true,
-        //backgroundColor: '#fff',
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: true,
             enableRemoteModule: true,
             //webSecurity: false // only ever disabled for testing purposes. a build will never intentionally be released with webSecurity disabled
         },
-        //backgroundColor: '#44444444',
+        frame: false,
+    };
+    
+    supportsVibrancy() ?
+    mainWindow = new BrowserWindow({
+        ...browserWindowProperties,
         vibrancy: getVibrancySettings(),
-        frame: false // removes the frame from the window so acrylic works, but also because it draws its own title bar
-    })
+        //frame: process.platform !== "win32" // on windows, you need the frame disabled for acrylic to work. on mac, it doesnt matter (i think)
+    }) :
+    mainWindow = new BrowserWindow({
+        ...browserWindowProperties,
+        backgroundColor: '#444444',
+        //frame: process.platform !== "win32" // if we arent on windows, use the native title bar. only windows has the font used for title bar buttons
+    });
+    
+    mainWindow.menuBarVisible = false;
+
+    
+    
     songsModule.loadSongsFromMusicFolder().then((ret) => { //     waits for songs to finish loading
+        console.log("sending updated list")
         mainWindow.webContents.send("songs:refreshList", ret); // then tells the browser window the new songs and that it should refresh them
     });
     //ewc.setAcrylic(mainWindow, 0x14800020);
@@ -256,6 +280,9 @@ async function createWindow () {
         }
     })
 
+    mainWindow.on("maximize",   () => {mainWindow.webContents.send("win.maxres", "max")});
+    mainWindow.on("unmaximize", () => {mainWindow.webContents.send("win.maxres", "res")});
+
     startRPC()
 
     log("registering media key handlers...")
@@ -267,10 +294,10 @@ async function createWindow () {
     log("Done!")
 }
 
-function keybind_pauseplay() { mainWindow.webContents.send("updateState", "playpause");log("playpause"); };
-function keybind_stop()      { mainWindow.webContents.send("updateState", "stop");log("stop"); };
-function keybind_prev()      { mainWindow.webContents.send("updateState", "prev");log("prev"); };
-function keybind_next()      { mainWindow.webContents.send("updateState", "next");log("next"); };
+function keybind_pauseplay() { mainWindow.webContents.send("updateState", "playpause"); /*log("playpause");*/   };
+function keybind_stop()      { mainWindow.webContents.send("updateState", "stop");      /*log("stop");*/        };
+function keybind_prev()      { mainWindow.webContents.send("updateState", "prev");      /*log("prev");*/        };
+function keybind_next()      { mainWindow.webContents.send("updateState", "next");      /*log("next");*/        };
 
 log("registering application listeners")
 
@@ -278,6 +305,10 @@ app.on("will-quit", () => {
     log("closing.")
     rpc.destroy()
     globalShortcut.unregisterAll();
+})
+
+app.on("second-instance", (e, args, dir) => {
+    mainWindow?.webContents.send("secondinst:args", {args, dir});
 })
 
 // This method will be called when Electron has finished
@@ -305,15 +336,32 @@ app.on('window-all-closed', function () {
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
 ipcMain.on('acrylic-enable', (_) => {
-    mainWindow.setVibrancy(getVibrancySettings())
+    if (supportsVibrancy()) mainWindow.setVibrancy(getVibrancySettings())
 });
 
 ipcMain.on('acrylic-disable', (_) => {
-    mainWindow.setVibrancy(null)
+    if (supportsVibrancy()) mainWindow.setVibrancy(null)
 });
 
 ipcMain.on("updateCheck", function() {
     checkForUpdates()
+})
+
+ipcMain.on("win.control.min", () => {mainWindow.minimize()});
+ipcMain.on("win.control.maxres", () => {
+    mainWindow.isMaximized() ?
+    mainWindow.unmaximize() :
+    mainWindow.maximize()
+});
+
+ipcMain.on("win.sizehack", () => {
+    let s = mainWindow.getSize();
+    mainWindow.setSize(s[0], s[1]+1);
+    mainWindow.setSize(s[0], s[1]);
+})
+
+ipcMain.on("win.beforeunload", () => {
+    //mainWindow.removeAllListeners();
 })
 
 /*

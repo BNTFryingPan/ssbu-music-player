@@ -12,6 +12,7 @@ var nowPlaying = {
         "type": null,
         "videoData": null
     },
+    "songToAddToPlaylist": null,
     "youtube-queue": [],
     "currentPlaylist": null,
     "currentSource": null,
@@ -31,31 +32,34 @@ const { ipcRenderer } = require("electron");
 
 function updateCurrentShuffleSource(newSource) {
     let updated = "not correct type"
-    if (newSource.type == "album") {
-        if (songs[newSource.name]) {
-            nowPlaying['shuffleSource'] = newSource;
-            updated = "success"
-        } else updated = "no album"
-    } else if (newSource.type == "playlist") {
-        if (playlists[newSource.name]) {
-            nowPlaying['shuffleSource'] = newSource;
-            updated = "success"
-        } else updated = "no playlist"
+    switch (newSource.type) {
+        case "album":
+            updated = "no album"
+            if (songs[newSource.name]) {
+                nowPlaying['shuffleSource'] = newSource;
+                updated = "success"
+            }
+            break
+        case "playlist":
+            updated = "no playlist"
+            if (playlists[newSource.name]) {
+                nowPlaying['shuffleSource'] = newSource;
+                updated = "success"
+            }
+            break
     }
+
     console.log("updated shuffle source: " + updated)
     if (updated == "success") {nowPlaying["startTime"]["source"] = Date.now()}
 }
 
 function getCurrentShuffleSource() {
-    let newSource = nowPlaying['shuffleSource']
-    if (newSource.type == "album") {
-        if (songs[newSource.name]) {
-            return {"type": "album", "src": songs[newSource.name]}
-        }
-    } else if (newSource.type == "playlist") {
-        if (playlists[newSource.name]) {
-            return {"type": "playlist", "src": playlists[newSource.name]}
-        }
+    let source = nowPlaying['shuffleSource']
+    if (source.type == "album") {
+        if (songs[source.name]) return {"type": "album", "src": songs[source.name]}
+    }
+    if (source.type == "playlist") {
+        if (playlists[source.name]) return {"type": "playlist", "src": playlists[source.name]}
     }
 }
 
@@ -78,10 +82,10 @@ log = require('electron-log')
 
 document.addEventListener('readystatechange', (e) =>{
     ipcRenderer.on("updateState", (ev, message) => {
-        if      (message === "next") { nextSong(); }
-        else if (message === "prev") { prevSong(false); }
-        else if (message === "stop") { pauseSong(false); }
-        else if (message === "playpause") { pauseSong(); }
+        if (message === "next") return nextSong();
+        if (message === "prev") return prevSong(false);
+        if (message === "stop") return pauseSong(false);
+        if (message === "playpause") return pauseSong();
     });
 })
 
@@ -94,7 +98,9 @@ function randomSong() {
     if (src["type"] == "album") {
         var randomSongIndex = parseInt(Math.random() * src['src']['songFilePaths'].length);
         return {"data": src['src']['songs'][src['src']['songFilePaths'][randomSongIndex]], "index": randomSongIndex, "file": src['src']['songFilePaths'][randomSongIndex], "type":"local-file"};
-    } else if (src['type'] == "playlist") {
+    }
+
+    if (src['type'] == "playlist") {
         let rsong = src['src']['songs'][parseInt(Math.random() * src['src']['songs'].length)];
         return {"data": getSongData(rsong["dir"]), "index": 0, "file": rsong["dir"], "type":"local-file"}
     }
@@ -107,31 +113,42 @@ function updateSongProgressFromBar() {
 }
 
 function pauseSong(state) {
-    if (state == true || state == false) {
-        if (state) {
-            document.getElementById('song').pause()
-            nowPlaying['playbackState'] = "Paused";
-            dispatchEvent("PLAYERSTATECHANGE", {"paused": true})
-        } else {
-            document.getElementById('song').play()
-            nowPlaying['playbackState'] = "Playing"
-            dispatchEvent("PLAYERSTATECHANGE", {"paused": false})
-        }
-    } else {
-        if (document.getElementById('song').paused) {
-            document.getElementById('song').play()
-            nowPlaying['playbackState'] = "Playing"
-            dispatchEvent("PLAYERSTATECHANGE", {"paused": false})
-        } else {
-            document.getElementById('song').pause()
-            nowPlaying['playbackState'] = "Paused"
-            dispatchEvent("PLAYERSTATECHANGE", {"paused": true})
-        }
-    }
+    state ??= !document.getElementById('song').paused
+    document.getElementById('song')[state?"pause":"play"]()
+    nowPlaying['playbackState'] = state ? "Paused" : "Playing";
+    dispatchEvent("PLAYERSTATECHANGE", {"paused": state})
     updateRPC()
 }
 
 function nextSong() {
+    if (document.getElementById("sto-enablesr").checked && nowPlaying['youtube-queue'].length > 0) {
+        let next = nowPlaying["youtube-queue"].shift()
+        nowPlaying.song.type = "yt"
+        nowPlaying.song.url = next.id;
+        nowPlaying.song.videoData = next.details;
+        console.log('before download')
+        let stream = ytdl(next.id, {quality: "highestaudio"});
+        stream.pipe(fs.createWriteStream(platFolders.getDocumentsFolder() + "/ssbu-music/ytdl/song.mp4"));
+        stream.on('end', () => {
+            document.getElementById('song').src = platFolders.getDocumentsFolder() + "/ssbu-music/ytdl/song.mp4";
+            document.getElementById('song').play();
+            sendTwitchMessage("Now Playing " + next.details.videoDetails.title + " requested by " + next.requester)
+            console.log('playing song now')
+
+            document.getElementById('song-info-art').src = next.details.videoDetails.author.thumbnails[0].url
+            //document.getElementById('song-info-art').src = songs[songData[0]['album']]['albumArt']
+            document.getElementById('song-info-title').innerHTML  = next.details.videoDetails.title;
+            document.getElementById('song-info-album').innerHTML  = "YouTube Video";
+            document.getElementById('song-info-artist').innerHTML = next.details.videoDetails.author.name;
+
+            document.getElementById('song-info-title2').innerHTML = next.details.videoDetails.title + " - YouTube Video - " + next.details.videoDetails.author.name;
+            document.getElementById('song-info-genre').innerHTML = next.details.videoDetails.category + " - " + next.details.videoDetails.description;
+            document.getElementById('song-info-line1').innerHTML = next.details.videoDetails.uploadDate + " - " + next.details.videoDetails.lengthSeconds + " - [YTV]";
+            document.getElementById('song-info-line2').innerHTML = "YTV - Advanced codec info not available"
+        })
+        console.log('after download')
+        return
+    }
     if (nowPlaying['shuffleMode'] == "loop") {
         nowPlaying['loopCount']++;
         document.getElementById('song').currentTime = 0;
@@ -139,18 +156,25 @@ function nextSong() {
         nowPlaying['playbackState'] = "Playing";
         nowPlaying['startTime'] = Date.now();
         updateRPC()
-    } else if (nowPlaying['shuffleMode'] == "shuffleall") {
+        return
+    }
+    if (nowPlaying['shuffleMode'] == "shuffleall") {
         let next = randomSong(songs['All Songs'])
         playSongFromFile(next['file'])
         sendNewSongPlayingMessage(next)
         nowPlaying['loopCount'] = 0;
-    } else if (nowPlaying['shuffleMode'] == "shufflesource") {
+        return
+    }
+    if (nowPlaying['shuffleMode'] == "shufflesource") {
         //debugger
         let next = randomSong()
         playSongFromFile(next['file'])
         sendNewSongPlayingMessage(next)
         nowPlaying['loopCount'] = 0;
-    } else if (nowPlaying['shuffleMode'] == "order") {
+        return
+    }
+    if (nowPlaying['shuffleMode'] == "order") {
+        nowPlaying['loopCount'] = 0;
         if (nowPlaying['shuffleSource']['type'] == "album") {
             var nextSongIndex = nowPlaying['song']['index']
             if (nextSongIndex >= nowPlaying['shuffleSource']['songs'].length) {
@@ -159,19 +183,19 @@ function nextSong() {
             
             playSongFromFile(nowPlaying['shuffleSource']['songFilePaths'][nextSongIndex])
             nowPlaying['song']['index'] = nextSongIndex;
-            
-        } else if (nowPlaying['shuffleSource']['type'] == "playlist") {
-            alert('whoops, you found playlists, bye')
+            return
         }
-        nowPlaying['loopCount'] = 0;
-    } else {
-        playSongFromFile(randomSong()['data'][0]['fileLocation']);
-        nowPlaying['shuffleMode'] = "shuffle";
-        nowPlaying['loopCount'] = 0;
-        alert("invalid shuffle mode, reverted to shuffle")
+        if (nowPlaying['shuffleSource']['type'] == "playlist") {
+            //alert('whoops, you found playlists, bye')
+        }
     }
 
-    rpcUpdateSong(nowPlaying['song']['data'])
+    playSongFromFile(randomSong()['data'][0]['fileLocation']);
+    nowPlaying['shuffleMode'] = "shuffle";
+    nowPlaying['loopCount'] = 0;
+    alert("invalid shuffle mode, reverted to shuffle")
+
+    //rpcUpdateSong(nowPlaying['song']['data'])
 }
 
 function prevSong(notif) {
@@ -180,24 +204,24 @@ function prevSong(notif) {
         nowPlaying['startTime'] = Date.now();
         updateRPC();
         if (!!notif) alert('wip');
-    } else {
-        document.getElementById('song').currentTime = 0;
-        nowPlaying['startTime'] = Date.now();
-        updateRPC();
+        return
     }
+    document.getElementById('song').currentTime = 0;
+    nowPlaying['startTime'] = Date.now();
+    updateRPC()
+}
+
+const SHUFFLE_MODES = {
+    "loop": "shuffleall",
+    "shuffleall": "shufflesource",
+    "shufflesource": "order",
+    "order": "loop",
 }
 
 function shuffleSongs() {
     let previousState = "" + nowPlaying["shuffleMode"];
-    if (nowPlaying['shuffleMode'] == "loop") {
-        nowPlaying["shuffleMode"] = "shuffleall";
-    } else if (nowPlaying['shuffleMode'] == "shuffleall") {
-        nowPlaying["shuffleMode"] = "shufflesource";
-    } else if (nowPlaying['shuffleMode'] == "shufflesource") {
-        nowPlaying["shuffleMode"] = "order"
-    } else if (nowPlaying['shuffleMode'] == "order") {
-        nowPlaying["shuffleMode"] = "loop"
-    }
+
+    nowPlaying['shuffleMode'] = SHUFFLE_MODES[nowPlaying['shuffleMode']]
 
     updateShuffleModeText()
     dispatchEvent("SHUFFLEMODECHANGE", {"previous": previousState, "new": nowPlaying["shuffleMode"]})
@@ -214,8 +238,8 @@ function updateVolume() {
     //gainNode.gain.value = 0;
 }
 
-const playButtonImage = "./assets/play.png";
-const pauseButtonImage = "./assets/pause.png";
+const PLAY_BUTTON_IMAGE = "./assets/play.png";
+const PAUSE_BUTTON_IMAGE = "./assets/pause.png";
 
 function songTick() {
     var song = document.getElementById('song')
@@ -228,41 +252,30 @@ function songTick() {
         isChangingSong = false;
     }
 
+    document.getElementById('np-pause-img').src = song.paused ? PAUSE_BUTTON_IMAGE : PLAY_BUTTON_IMAGE;
     
-    if (song.paused) {
-        document.getElementById('np-pause-img').src = playButtonImage;
+    if (!song.paused) document.getElementById("np-slider-time").innerHTML = fancyTimeFormat(song.currentTime) + " / " + fancyTimeFormat(song.duration)
 
-        if (nowPlaying["song"]["data"] !== null) document.getElementById("_title").innerHTML = "Paused | " + nowPlaying["song"]["data"][0]['title'] + " - "  + nowPlaying["song"]["data"][0]['album'] + " | Smash Music Player v" + document.getElementById("version-display").innerHTML
-    } else {
-        document.getElementById('np-pause-img').src = pauseButtonImage;
-        document.getElementById("np-slider-time").innerHTML = fancyTimeFormat(song.currentTime) + " / " + fancyTimeFormat(song.duration)
-
-        if (nowPlaying["song"]["data"] !== null) document.getElementById("_title").innerHTML = nowPlaying["song"]["data"][0]['title'] + " - "  + nowPlaying["song"]["data"][0]['album'] + " | Smash Music Player v" + document.getElementById("version-display").innerHTML
-    }
+    if (nowPlaying["song"]["data"] !== null) document.getElementById("_title").innerHTML = `${song.paused ? "Paused | " : ""}${nowPlaying["song"]["data"][0]['title']} - ${nowPlaying["song"]["data"][0]['album']} | Smash Music Player v${document.getElementById("version-display").innerHTML}`
 
     document.getElementById('now-playing-seek-slider').value = song.currentTime;
     song.volume = (userSettings['userVolumeSliderValue'] || 1)**3
 
-
-    
-
-    /*if (!calculatingGain) {
-        document.getElementById("song-info-normalization").innerHTML = gainNode.gain.value + " = " + nowPlaying['rawNormalizationGain'] + "x" + userSettings['userVolumeSliderValue'];
-    } else {
-        document.getElementById("song-info-normalization").innerHTML = gainNode.gain.value + " = " + nowPlaying['rawNormalizationGain'] + "x" + userSettings['userVolumeSliderValue'] + " (Recalculating...)"
-    }*/
+    //document.getElementById("song-info-normalization").innerHTML = gainNode.gain.value + " = " + nowPlaying['rawNormalizationGain'] + "x" + userSettings['userVolumeSliderValue'] + calculatingGain ? " (Recalculating...)" : "";
 }
 
 // MediaNextTrack, MediaPreviousTrack, MediaStop and MediaPlayPause
 
-var elec = require('electron');
+/*var elec = require('electron');
 if (elec.remote.app.isPackaged) {
     document.getElementById("version-display").innerHTML = elec.remote.app.getVersion();
     console.log("Production Build");
 } else {
     document.getElementById("version-display").innerHTML = require("./package.json").version + " - Development Build"
     nowPlaying['isDevelopmentBuild'] = true;
-}
-window.setInterval(function(){
-    songTick();
-}, 25);
+}*/
+
+//document.getElementById("version-display").innerHTML = window.Bridge.version;
+//nowPlaying['isDevelopmentBuild'] = !window.Bridge.isPackaged;
+
+window.setInterval(songTick, 25);

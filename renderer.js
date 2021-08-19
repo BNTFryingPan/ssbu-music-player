@@ -32,6 +32,6 @@ ipcRenderer.on("dom:updateContent", (event, args) => { // allows the main proces
 
 // logging things from the main process
 ipcRenderer.on("console:log", (e, msg) => {
-    if (typeof msg === typeof "") console.log("Main Process: " + msg);
-    else console.log("Main Process*: " + JSON.stringify(msg));
+    if (typeof msg === typeof "") return console.log("Main Process: " + msg);
+    console.log("Main Process*: " + JSON.stringify(msg));
 });

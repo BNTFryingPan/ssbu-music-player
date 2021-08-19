@@ -61,11 +61,10 @@ function parseFolderData(dir) {
 function loadAlbumHtmlFromFile(path, album) {
     if (album == "All Songs" || album == "Other") path = platFolders.getMusicFolder();
     let f = parseFolderDataFile(path + "/" + getDataFileName());
-    if (!f['albums'][album]) {
-        return false
-    } else {
+    if (f['albums'][album]) {
         return f['albums'][album]['html']
     }
+    return false
 }*/
 
 function parseFolderDataFile(path) {
@@ -73,10 +72,9 @@ function parseFolderDataFile(path) {
         var f = fs.readFileSync(path, {"encoding": "utf-8"});
         let j = JSON.parse(f)
         return j
-    } else {
-        fs.writeFileSync(path, JSON.stringify(blankFolderData))
-        return blankFolderData
     }
+    fs.writeFileSync(path, JSON.stringify(blankFolderData))
+    return blankFolderData
 }
 
 function saveFolderDataFile(path, data) {
@@ -86,10 +84,9 @@ function saveFolderDataFile(path, data) {
 function readSettingsFile() {
     if (fs.existsSync(platFolders.getMusicFolder() + "/" + getSettingsFileName())) {
         return JSON.parse(fs.readFileSync(platFolders.getMusicFolder() + "/" + getSettingsFileName()))
-    } else {
-        fs.writeFileSync(platFolders.getMusicFolder() + "/" + getSettingsFileName(), JSON.stringify(userSettings))
-        return userSettings
     }
+    fs.writeFileSync(platFolders.getMusicFolder() + "/" + getSettingsFileName(), JSON.stringify(userSettings))
+    return userSettings
 }
 
 function saveSettingsFile() {
@@ -112,7 +109,7 @@ function savePlaylistsToFile() {
 function loadPlaylistsFromFile() {
     if (fs.existsSync(platFolders.getMusicFolder() + "/" + getPlaylistsFileName())) {
         playlists = JSON.parse(fs.readFileSync(platFolders.getMusicFolder() + "/" + getPlaylistsFileName()))
-    } else {
-        fs.writeFileSync(platFolders.getMusicFolder() + "/" + getPlaylistsFileName(), JSON.stringify(playlists))
+        return
     }
+    fs.writeFileSync(platFolders.getMusicFolder() + "/" + getPlaylistsFileName(), JSON.stringify(playlists))
 }
