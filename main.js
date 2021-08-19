@@ -5,7 +5,7 @@
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
-global.logQueue = []
+logQueue = []
 
 // special log function that should also log to the browser window devtools console
 function log(msg, opts) {
@@ -115,7 +115,10 @@ ipcMain.on("file:openSettingsFile", () => {
 // allows the browser window to set a discord status
 ipcMain.on("rpc:setactivity", (e, activity) => {
     //if (!isWindows10()) return false // only works on windows for now (not sure why), too lazy to check for other windows versions though
-    if (!rpcReady) rpcCache = activity;
+    if (!rpcReady) {
+        rpcCache = activity;
+        return
+    }
     rpc.setActivity(activity)
     //log("rpc: " + JSON.stringify(activity))
 
@@ -127,7 +130,7 @@ async function startRPC() {
 
     DiscordRPC.register(clientID);
     rpc = new DiscordRPC.Client({ transport: 'ipc' });
-    global.rpc = rpc
+    //global.rpc = rpc
 
     rpc.on('ready', () => {
         rpcReady = true
@@ -216,6 +219,7 @@ async function createWindow () {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: true,
             enableRemoteModule: true,
+            contextIsolation: false
             //webSecurity: false // only ever disabled for testing purposes. a build will never intentionally be released with webSecurity disabled
         },
         frame: false,
@@ -303,7 +307,7 @@ log("registering application listeners")
 
 app.on("will-quit", () => {
     log("closing.")
-    rpc.destroy()
+    rpcReady = false
     globalShortcut.unregisterAll();
 })
 
@@ -314,7 +318,10 @@ app.on("second-instance", (e, args, dir) => {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', async () => {log("application ready, preparing to create window..."); createWindow()})
+app.on('ready', async () => {
+    log("application ready, preparing to create window...")
+    createWindow()
+})
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function () {
@@ -324,7 +331,13 @@ app.on('window-all-closed', function () {
     // it doesnt currently support reopening the main window or running
     // in the background (while closed)
     //if (process.platform !== 'darwin') app.quit()
-    app.quit();
+    rpcReady = false
+    rpc.destroy().then(() => {
+        app.quit()
+    }).catch(() => {
+        app.quit()
+    })
+    
 })
 
 /*app.on('activate', function () {
