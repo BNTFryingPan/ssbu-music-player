@@ -52,7 +52,7 @@
         "icon": "icon.png"
     },
     "devDependencies": {
-        "electron": "^11.1.0",
+        "electron": "^15.5.5",
         "electron-builder": "^22.8.1"
     },
     "dependencies": {
